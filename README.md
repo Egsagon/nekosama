@@ -2,85 +2,85 @@
 
 Simple utilities to download animes from NS, especially the FHD backend (fusenet).
 
+Note: theorically the other backend (pstream, SD) works same, but fusenet is default
+and provide more quality (ig).
+
 # Usage
 
 ```py
 
-from core import fetcher, scrapper
+import core
+from core.consts import Quality
 
-# Get all NS links to episodes from an anime.
-# Return the anime synopsis and a list of urls.
-fetcher.get_anime( url: str ) -> tuple[str, list[str]]
+# Initialise the communication instance
+com = core.scrapper.Comm()
 
-# Get the embed url of an anime from its NS url.
-fetcher.get_episode( url: str ) -> tuple[str, str]
+# Fetch an anime
+anime  = com.get_anime('enter-ns-url-here')
 
-# Get all the segments url from an embed url.
-# Automatically choose the best quality.
-fetcher.get_episode_links( url: str ) -> list[str]
+# Get an episode
+ep = anime.episode[2]
 
-# Download an episode given all its segment urls.
-fetcher.download_episode( links: list[str], path: str )
-
-# Backend web scrapping function used to get
-# all the quality links for an episode embed url.
-scrapper.scrap( url: str ) -> str
+# Download the episode
+ep.download('episode_2', Quality.MIDDLE)
 
 ```
 
 Exemple downloader can be found in `main.py`.
 
-<details>
-  <summary>View code</summary>
-  
-  ```py
-
-import os
-from core import fetcher, progress
-
-url = 'Anime url here'
-out = './path/to/dir/'
-
-# Create dirs
-if not os.path.exists(out): os.makedirs(out)
-
-cla = '\n[ MAIN PY ]'
-print(cla, 'Starting')
-
-syn, eps = fetcher.get_anime(url)
-open(out + 'syn.txt', 'w').write(syn)
-
-print(cla, 'Wrote syn')
-
-for episode in progress.Bar(cla, eps[7:]):
-    
-    while 1:
-    
-        try:
-            name = '_'.join(episode.split('/episode/')[1].split('-')[10:])
-            
-            print(cla, '### Fetching', name)
-            
-            prov, eurl = fetcher.get_episode(episode)
-            links = fetcher.get_episode_links(eurl)
-            path = fetcher.download_episode(links, out + name + '.mp4')
-            
-            print(cla, f'### Fetched {name} ({path = })')
-            
-            break
-    
-        except Exception as e:
-            print(cla, '\033[91mFailed to scrappe:', e.args, '\033[0m, retrying...')    
-        
-        except KeyboardInterrupt: print(cla, 'User interruption.')
-
-print(cla, 'Finished process')
-
-  ```
-</details>
-
-
 # Setup
 
-- Install `requirments.txt`
-- Install adblocker(s) onto the target browser
+- Install `requirments.txt` using pip
+- Run the browser at blank:
+
+```py
+import core
+core.grabber.setup()
+```
+- Use it to install adblocker(s) (like `ublock origin`).
+
+# Structure
+
+## Comm
+The `Comm` object is an instance that centralize the sessions
+for all requests.
+Useful methods:
+
+- `get_anime( url: str ) -> Anime`: Associate an `Anime` object for an url.
+
+## Anime
+The `Anime` object contains methods about getting anime data and episodes.
+
+- `get_synopsis() -> str`: Get the raw anime' synopsis.
+- `get_data() -> dict[str, str]`: Get useful informations about the anime (rating, type, etc.)
+- `get_picture() -> Image`: Get the anime' presentation picture.
+- `get_poster() -> Image`: Get the anime' presentation poster (background image).
+- `get_tags() -> dict[str, str]`: Get the anime' search tags and their url.
+
+- `get_episode( index: int )`: Get one specific episode of the anime.
+- `get_episodes() -> list[episodes]`: Get ALL the anime episodes.
+
+- `download( path: str, pause: int, quality: int | str | constant) -> list[str]`: Download all the episodes from the anime, given a certain directory and quality.
+
+Most of those functions use a caching system. When they do, you can override the cache
+by specifying the `force: bool` argument to refresh the request, and the ``cache: bool`
+argument to avoid (re)writing to the cache.
+
+Those functions also have an equivalent attribute which will call them when called.
+E.g:
+```py
+s = anime.get_synopsis()
+# is same as
+s = anime.synopsis
+# if no argument to specify are needed.
+```
+
+Moreover, the `episode` (no 's') argument will call a generator-like object that allows
+for parsing only one episode at a time.
+
+## Episode
+TODO
+
+## Image
+TODO
+

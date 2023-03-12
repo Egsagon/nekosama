@@ -77,7 +77,10 @@ def setup() -> None:
     
     with sync_playwright() as core:
         
-        browser = open_browser(core, False, False)
+        # Init browser
+        browser: core.firefox.launch = open_browser(core, False, False)
+        
+        # Idle
         while 1: pass
 
 # EOF
