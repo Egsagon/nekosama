@@ -79,8 +79,19 @@ Moreover, the `episode` (no 's') argument will call a generator-like object that
 for parsing only one episode at a time.
 
 ## Episode
-TODO
+The `Episode` object if provided by an `Anime` objects and is a representation of an episode of this anime. It can also be initiated using the classmethod `from_url`, but you also need to provide a `Comm` instance to it.
+
+- `get_picture() -> Image`: Same as `Anime`.
+- ``download( path: str, quality: str, ext: bool) -> str`: Download the episode at a certain path with (or not) an extension and with a specific quality.
+
+### Note: Specifiying quality
+Quality can either be:
+- an `int`, referencing a video quality (1080, 720, etc). Will be picked the nearest possible value to it.
+- an `str`, either `best`, `worst`, or `middle`.
+
+- a constant of `core.consts.Quality`, essentially the same as `str`.
 
 ## Image
-TODO
-
+The `Image` object is created by both `Anime` and `Episode` objects.
+It contains the following attributes: url, ext(ension), url and has one method:
+- `download( path: str, ext: bool )`: Download the image to a path, with (or not) an extension.
