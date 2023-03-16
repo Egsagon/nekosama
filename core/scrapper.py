@@ -233,7 +233,8 @@ class Episode:
     def download(self,
                  path: str,
                  quality: int | str = consts.Quality.BEST,
-                 ext: bool = True) -> str:
+                 ext: bool = True,
+                 looping_callback: Callable = None) -> str:
         '''
         Download the episode.
         ---------------------
@@ -276,7 +277,6 @@ class Episode:
         # Download
         content = bytes()
         
-        
         for i, link in utils.bar('Fetching', list(enumerate(segments))):
             
             # log.log(f'Fetching [\033[93m{i: ^{len(str(lenght))}}\033[0m/{lenght}]')
@@ -286,6 +286,8 @@ class Episode:
             # Error protection
             if not segment.ok:
                 raise consts.FetchingErorr(segment.text, segment.status_code)
+            
+            if looping_callback is not None: looping_callback(i, lenght)
             
             content += segment.content
             
