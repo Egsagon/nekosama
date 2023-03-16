@@ -26,7 +26,9 @@ ep.download('episode_2', Quality.MIDDLE)
 
 ```
 
-Exemple downloader can be found in `main.py`.
+An API example can be found in `main.py`, and an example ui can be found in `ui.py`:
+
+[demo](https://github.com/Egsagon/NS-API/blob/src/demo.png)
 
 # Setup
 
