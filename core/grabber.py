@@ -27,6 +27,16 @@ def open_browser(core: sync_playwright, idle: bool = False, headless: bool = Tru
             devtools = True
         )
 
+def is_valid_segment_list(req) -> bool:
+    '''
+    Returns whether a request is what we need
+    to get the segments.
+    '''
+    
+    u = req.response().url
+    
+    return '//fusevideo.net/m/' in u or '//www.pstream.net/m/' in u
+
 def grab_request(url: str, headless: bool = True) -> str:
     '''
     Get the list of providing urls from a provider.
@@ -44,7 +54,7 @@ def grab_request(url: str, headless: bool = True) -> str:
     with sync_playwright() as core:
         
         # Setup
-        browser = open_browser(core, False, headless)
+        browser = open_browser(core, False, False) # headless
         
         page = browser.new_page()
         page.set_viewport_size({'width': x, 'height': y})
@@ -58,7 +68,7 @@ def grab_request(url: str, headless: bool = True) -> str:
         log.log('Listenning for requests...')
         
         # Wait for quality request (m method)
-        with page.expect_request_finished(lambda req: '//fusevideo.net/m/' in req.response().url) as info:
+        with page.expect_request_finished(is_valid_segment_list) as info:
             
             res = info.value.response().text()
             

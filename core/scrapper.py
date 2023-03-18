@@ -267,7 +267,12 @@ class Episode:
         log.log(f'Using url \033[92m{url_rep}\033[0m for quality \033[92m{quality}\033[0m')
         
         # Fetch segments
-        res = self.comm.session.get(url, headers = consts.segments_headers).text
+        headers = consts.segments_headers
+        
+        # In case provider is pstream, change host
+        if 'www.pstream.net' in provider_url: headers['Host'] = 'www.pstream.net'
+        
+        res = self.comm.session.get(url, headers = headers).text
         segments = [s for s in res.split('\n') if s.startswith('https://')]
         
         lenght = len(segments)
