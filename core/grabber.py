@@ -54,7 +54,7 @@ def grab_request(url: str, headless: bool = True) -> str:
     with sync_playwright() as core:
         
         # Setup
-        browser = open_browser(core, False, False) # headless
+        browser = open_browser(core, False, headless)
         
         page = browser.new_page()
         page.set_viewport_size({'width': x, 'height': y})
