@@ -54,50 +54,6 @@ def complete_url(url: str) -> str:
         a complete url.
     '''
     
-    '''
-    domain = 'neko-sama.fr'
-    root = 'https://neko-sama.fr/anime/'
-    
-    root_gl = 'info/'
-    root_ep = 'episode/'
-    
-    name = parse_name(url, uid = False)
-    
-    # Decide whether url is an episode or global info
-    is_ep = re.match(r'\d{1,3}_', url)
-    sup = root_ep if is_ep else root_gl
-    
-    # Full URL
-    if root + sup in url: return url
-    
-    # URL missing sup (and therefore root else invalid)
-    if not sup in url:
-        
-        # Check that id is present
-        if not (uid := url.split('-')[0].split('/')[-1]).isdecimal():
-            raise Exception(f'Invalid URL: {url} ({uid})')
-        
-        # Remove leading slash
-        if url[0] == '/': url = url[1:]
-        return root + sup + url
-    
-    # URL missing root
-    if not root in url:
-        
-        # Remove leading slash
-        if url[0] == '/': url = url[1:]
-        return root + url
-    
-    # URL missing protocol
-    if domain in url:
-        if url.startswith('/' + domain):
-            return 'https:/' + url
-        
-        return 'https://' + url
-    
-    raise Exception(f'Invalid URL: {url}')
-    '''
-    
     proto = 'https://'
     domain = 'neko-sama.fr'
     root = proto + domain
