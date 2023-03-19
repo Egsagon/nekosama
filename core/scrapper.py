@@ -234,7 +234,8 @@ class Episode:
                  path: str,
                  quality: int | str = consts.Quality.BEST,
                  ext: bool = True,
-                 looping_callback: Callable = None) -> str:
+                 looping_callback: Callable = None,
+                 show_bar: bool = True) -> str:
         '''
         Download the episode.
         ---------------------
@@ -264,7 +265,7 @@ class Episode:
         
         url_rep = (url + ' ' * 20)[:20] + '...'
         
-        log.log(f'Using url \033[92m{url_rep}\033[0m for quality \033[92m{quality}\033[0m')
+        log.log(f'Using url \033[92m{url_rep}\033[0m with quality \033[92m{quality}\033[0m')
         
         # Fetch segments
         headers = consts.segments_headers
@@ -282,7 +283,7 @@ class Episode:
         # Download
         content = bytes()
         
-        for i, link in utils.bar('Fetching', list(enumerate(segments))):
+        for i, link in utils.bar('Fetching', list(enumerate(segments)), show_bar):
             
             # log.log(f'Fetching [\033[93m{i: ^{len(str(lenght))}}\033[0m/{lenght}]')
             

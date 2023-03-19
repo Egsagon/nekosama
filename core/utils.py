@@ -206,7 +206,7 @@ def parse_qualities(raw: str, quality: str | int) -> str:
 
 # Logging functions
 
-def bar(msg: str, iter: list, switch: bool = False) -> tqdm:
+def bar(msg: str, iter: list, show: bool = True) -> tqdm:
     '''
     TQDM bar wrapper.
     -----------------
@@ -220,9 +220,11 @@ def bar(msg: str, iter: list, switch: bool = False) -> tqdm:
         A TQDM generator.
     '''
     
+    if not show: return iter
+    
     return tqdm(iter,
-                bar_format = '{desc} [{n_fmt}/{total_fmt} ({percentage:3.0f}%)] [{bar}]',
-                ascii = ' >>>>>>>>>>>>>>>>>>>>>>>>>-',
+                bar_format = '{desc} ╞{bar}╡ {n_fmt}/{total_fmt} ({percentage:3.0f}%)',
+                ascii = ' ═',
                 desc = msg)
 
 # EOF
