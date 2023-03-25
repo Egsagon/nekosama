@@ -3,12 +3,17 @@ import core.log as logging
 import core.consts as consts
 import core.grabber as grabber
 
+import json
+import threading
 import requests as req
 import requests_html as hreq
 
-from time import sleep
+from copy import copy
+from sys import getsizeof
+from time import sleep, time
 from dataclasses import dataclass
 from typing import Any, Callable, Self
+from numerize.numerize import numerize
 
 log = logging.root.new_logger('scrapper')
 
@@ -45,6 +50,23 @@ class EpisodeIterable:
         '''
         
         return f'<Episode {self.anime.name} (not generated yet)>'
+
+    def __iter__(self) -> Self:
+        '''
+        Iteration method.
+        '''
+        
+        self.index = 0
+        return self
+    
+    def __next__(self) -> 'Episode':
+        '''
+        Next iteration method.
+        '''
+        
+        el = self[self.index]
+        self.index += 1
+        return el
 
 
 @dataclass
@@ -87,7 +109,6 @@ class Image:
         
         self.log.log(f'Downloaded \033[93m{self}\033[0m to \033[92m{path}')
 
-
 class Episode:
     def __init__(self, url: str, anime: 'Anime') -> None:
         '''
@@ -112,7 +133,7 @@ class Episode:
         self.cache: hreq.HTMLSession = None
         
         self.log = logging.root.new_logger('episode')
-        self.log.log(f'Loaded new object \033[93m{self}\033[0m')
+        # self.log.log(f'Loaded new object \033[93m{self}\033[0m')
     
     def __getattribute__(self, name: str) -> Any:
         '''
@@ -230,7 +251,7 @@ class Episode:
         self.provider = provider
         return provider
     
-    def download(self,
+    def download_old(self,
                  path: str,
                  quality: int | str = consts.Quality.BEST,
                  ext: bool = True,
@@ -306,6 +327,136 @@ class Episode:
         
         return path
 
+    def get_chunks(self, quality: str | int) -> tuple[dict, list]:
+        '''
+        Get video chunks of the episode according to a quality.
+        '''
+        
+        # Fetch provider url
+        provider_url = self.get_provider()
+        log.log(f'Fetched provider\033[94m', provider_url)
+        
+        # Fetch response
+        raw = grabber.grab_request(provider_url, True)
+        log.log(f'grabbed provider response\033[92m', raw.split('\n')[0])
+        
+        # Parse quality
+        url = utils.parse_qualities(raw, quality)
+        url_rep = (url + ' ' * 20)[:20] + '...'
+        log.log(f'Using url \033[92m{url_rep}\033[0m with quality \033[92m{quality}\033[0m')
+        
+        # Build headers
+        headers = consts.segments_headers
+        if 'www.pstream.net' in provider_url: headers['Host'] = 'www.pstream.net'
+        
+        # Fetch segments
+        res = self.comm.session.get(url, headers = headers).text
+        return headers, [s for s in res.split('\n') if s.startswith('https://')]
+
+    def get_chunk(self,
+                  request: req.PreparedRequest,
+                  data: dict = None,
+                  todo: list = None,
+                  timeout: int = .05) -> bytes | None:
+        '''
+        Download one video chunk.
+        '''
+        
+        raw = self.comm.session.send(request).content
+        
+        while b'<html>' in raw:
+            
+            # If request fails, put it back in todo
+            if todo is not None:
+                return todo.append(request)
+            
+            sleep(timeout)
+            raw = self.comm.session.send(request).content
+        
+        else:
+            if data is None: return raw
+            key = int(request.url.split('/')[-1].split('.')[0])
+            data[key] = raw
+    
+    def download(self,
+                   path: str,
+                   quality: int | str = consts.Quality.BEST,
+                   ext: bool = True,
+                   looping_callback: Callable[[int, int, str], None] = None,
+                   timeout: float = .05) -> str:
+        '''
+        Download the episode to a file,
+        with a specified quality.
+        -------------------------------
+        
+        Arguments
+            path: the path to download the file to.
+            quality: quality to download the video to.
+            ext: wheter to include an extension to the file.
+            looping_callback: update download log function.
+            timeout: spacing between each request. Defaults to server rate limit.
+        
+        Returns
+            The path of the downloaded file.
+        '''
+        
+        # Yes
+        if looping_callback is None: looping_callback = lambda *_: None
+        
+        # Get video chunks and generate requests
+        headers, chunks = self.get_chunks(quality)
+        requests = [req.Request('GET', chunk, headers).prepare() for chunk in chunks]
+        log.log(f'Generated \033[92m{len(requests)}\033[0m requests.')
+        
+        data = {}
+        todo = copy(requests)
+        timeout = .05
+        
+        while len(todo):
+            current = todo.pop(0)
+            
+            t = threading.Thread(target = self.get_chunk,
+                                 args = [current, data, todo, timeout])
+            t.start()
+            sleep(timeout)
+            
+            # Debug
+            ld, lt = len(data), len(todo)
+            log.log(f'\rDownloading \033[91m{lt}\033[0m => \033[92m{ld}', end = '')
+            looping_callback(len(chunks) - lt, len(chunks), 'Downloading')
+        
+        log.newline() and log.log('Checking integrity...')
+        
+        # Check for missing chunks
+        for i in range(len(chunks)):
+            if not i in data.keys():
+                
+                # Debug
+                log.log(f'Downloading missing chunk at \033[91m{i}')
+                looping_callback(i, len(chunks), 'Checking')
+                
+                # Get chunk request
+                mreq = [r for r in requests if r.url.endswith(f'{i}.ts')][0]
+                raw = self.get_chunk(mreq, timeout = timeout)
+                
+                # Add to data
+                data[i] = raw
+        
+        # Write chunks
+        if ext: path += '.mp4'
+        with open(path, 'wb') as file:
+            
+            for i in range(len(chunks)):
+                raw = data[i]
+                log.log(f'\rWriting to file (\033[92m{i + 1}\033[0m)', end = '')
+                looping_callback(i, len(chunks), 'Writing')
+                file.write(raw)
+        
+        log.newline()
+        log.log(f'Downloaded episode to \033[94m{path}')
+        
+        return path
+
 
 class Anime:
     def __init__(self, url: str, comm: 'Comm') -> None:
@@ -325,15 +476,15 @@ class Anime:
         self.poster: bytes = None
         self.tags: dict[str, str] = None
         
-        self.episodes: list[Episode] = None     # fetch all episodes
-        self.episode = EpisodeIterable(self)    # generator-like object
+        self.episodes: list[Episode] = None  # fetch all episodes
+        self.episode = EpisodeIterable(self) # generator-like object
         
         # Page cache
         self.cache: hreq.HTMLResponse = None
         
         self.log = log.new_logger('anime')
         
-        self.log.log(f'Loaded new object \033[93m{self}\033[0m')
+        # self.log.log(f'Loaded new object \033[93m{self}\033[0m')
     
     def __getattribute__(self, name: str) -> Any:
         '''
@@ -589,13 +740,15 @@ class Anime:
         # Replace last `_` char.
         ep_url = ep_url[::-1].replace('_', i, 1)[::-1]
         
-        self.log.log(f'Generated index \033[92m{index}\033[0m url for \033[93m{self}\033[0m: \033[92m{ep_url}\033[0m')
+        self.log.log(f'Generated index \033[92m{index}\033[0m url')
         return Episode(ep_url, self)
 
     def download(self,
                  path: str,
                  pause: int = 5,
-                 quality: str | int = consts.Quality.BEST) -> list[str]:
+                 quality: str | int = consts.Quality.BEST,
+                 speed: tuple = consts.Speed.NORMAL,
+                 old_method: bool = False) -> list[str]:
         '''
         Download all the episodes from this anime.
         ------------------------------------------
@@ -603,6 +756,9 @@ class Anime:
         Arguments
             path: the directory path to download to.
             pause: timeout before each episode dl.
+            quality: the video quality (constant).
+            speed: the download speed (constant).
+            old_method: whether to use the old download.
         
         Returns
             A list of paths.
@@ -619,7 +775,17 @@ class Anime:
             
             self.log.log(f'Downloading episode \033[93m{episode}\033[0m at \033[92m{ep_path}\033[0m')
             
-            episode.download(ep_path, quality, False)
+            params = dict(
+                path = ep_path,
+                quality = quality,
+                ext = False,
+                speed = speed
+            )
+            
+            # Download
+            if old_method: episode.download_old(**params)
+            else: episode.download(speed = speed, **params)
+            
             pathes += [ep_path]
             
             # Timeout
@@ -650,9 +816,9 @@ class Comm:
         
         # Settings
         self.log = log.new_logger('comm')
-        self.web_cache = web_cache or './cache/' # TODO inject to grabber
+        self.web_cache = web_cache or './chrome/' # TODO inject to grabber
         
-        self.log.log(f'Initiated new \033[93m{self}\033[0m instance')
+        # self.log.log(f'Initiated new \033[93m{self}\033[0m instance')
     
     def get_dyna(self, url: str) -> hreq.HTMLResponse:
         '''
@@ -666,7 +832,7 @@ class Comm:
             an <HTMLResponse> object (similar to bs4).
         '''
         
-        self.log.log(f'Loading dynamic page \033[92m{url}\033[0m')
+        self.log.log(f'Loading page \033[92m{url.split("/")[-1]}\033[0m')
         
         req = self.html_session.get(url)
         req.html.render()

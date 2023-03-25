@@ -10,6 +10,9 @@ import tkinter.filedialog as tkfd
 import tkinter.messagebox as tkmsg
 from tkinter.ttk import Progressbar
 
+# Debug level
+core.root.set_level(3) # TODO
+
 
 class App(tk.Tk):
     def __init__(self) -> None:
@@ -50,7 +53,7 @@ class App(tk.Tk):
         self.url_entry.bind('<Return>', self.load)
         
         self.info = tk.StringVar()
-        info = tk.Label(footer, textvariable = self.info, fg = 'red', bg = '#fff')
+        info = tk.Label(footer, textvariable = self.info, fg = 'red', bg = '#fff', font = ('Arial', 12))
         self.progress = Progressbar(footer)
         self.curprogress = Progressbar(footer)
         
@@ -152,18 +155,24 @@ class App(tk.Tk):
         
         self.progress.configure(mode = 'determinate')
         self.curprogress.configure(mode = 'determinate')
-        step = 100 / len(episodes)
         
-        def on_dl(cur, full) -> None:
-            self.info.set(f'Fetching segments {cur}/{full}')
-            self.curprogress.step(100 / full)
+        def on_dl(cur, full, status) -> None:
+            # Called each download update
+            
+            self.info.set(f'{status}: {cur}/{full}')
+            self.curprogress.config(value = (cur / full) * 100)
+            
+            # Overall progress only shows download progress
+            # because checking/writing too fast
+            if status == 'Downloading':
+                self.progress.step((100 / full) / len(episodes))
+            
             self.update()
         
         for episode in episodes:
             episode: core.scrapper.Episode
             
             self.info.set('Grabbing provider...')
-            self.progress.step(step)
             self.update()
             
             episode.download(path + episode.raw_name, qual,
@@ -173,6 +182,8 @@ class App(tk.Tk):
         
         # Finish
         tkmsg.showinfo('Finished', f'Successfuly downloaded {len(episodes)} at {path}.')
+        
+        self.progress.configure(value = 0)
         self.curprogress.configure(value = 0)
         self.info.set('Done.')
 

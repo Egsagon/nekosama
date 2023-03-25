@@ -1,14 +1,22 @@
 import core
-from core.consts import Quality
-
-# first call: core.grabber.setup(); exit()
+from time import time
+from core.consts import Speed
 
 if __name__ == '__main__':
     
     com = core.scrapper.Comm()
+    anime  = com.get_anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datta-ken_vostfr')
+    ep = anime.episode[10]
     
-    anime  = com.get_anime('ns-url-here')
+    start = time()
     
-    ep = anime.episode[2]
+    ep.download('ep10')
     
-    ep.download('test', Quality.MIDDLE)
+    print('\nDone in', time() - start)
+
+'''
+VANILLA - 183s
+THREADS - 51s
+'''
+
+# EOF
