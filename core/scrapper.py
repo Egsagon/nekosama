@@ -746,9 +746,7 @@ class Anime:
     def download(self,
                  path: str,
                  pause: int = 5,
-                 quality: str | int = consts.Quality.BEST,
-                 speed: tuple = consts.Speed.NORMAL,
-                 old_method: bool = False) -> list[str]:
+                 quality: str | int = consts.Quality.BEST) -> list[str]:
         '''
         Download all the episodes from this anime.
         ------------------------------------------
@@ -757,8 +755,6 @@ class Anime:
             path: the directory path to download to.
             pause: timeout before each episode dl.
             quality: the video quality (constant).
-            speed: the download speed (constant).
-            old_method: whether to use the old download.
         
         Returns
             A list of paths.
@@ -775,16 +771,7 @@ class Anime:
             
             self.log.log(f'Downloading episode \033[93m{episode}\033[0m at \033[92m{ep_path}\033[0m')
             
-            params = dict(
-                path = ep_path,
-                quality = quality,
-                ext = False,
-                speed = speed
-            )
-            
-            # Download
-            if old_method: episode.download_old(**params)
-            else: episode.download(speed = speed, **params)
+            episode.download(ep_path, quality, ext = False)
             
             pathes += [ep_path]
             
