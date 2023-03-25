@@ -1,6 +1,5 @@
 import core
 from time import time
-from core.consts import Speed
 
 if __name__ == '__main__':
     
