@@ -21,25 +21,6 @@ class Quality:
     WORST = 'worst'
     MIDDLE = 'middle'
 
-class Speed:
-    # Defaut
-    NORMAL      = None      # Leads to SAFE, download in avg 50s
-    
-    # Normal queues
-    ULTRASAFE   = (.1, 1)   # 1x10 req/s | Won't overload the target
-    SAFE        = (.05, 1)  # 1x2 req/s  | Most likely target rate limit
-    FAST        = (.03, 1)  # 1x-- req/s | More fails, not really rentable
-    ULTRAFAST   = (.01, 1)  # 1x10 req/s | Same as fast but even more fails
-    
-    # Chunks
-    SAFECHUNK   = (.05, 4)  # 4x2 req/s  | Send requests by chunks of n
-    FASTCHUNK   = (.05, 8)  # 8x2 req/s  | Same as SAFECHUNK
-    
-    # Experimental
-    GASGASGAS   = (0, 0)    # inf req/s  | doesn't wait at all
-
-# Errors
-
 class FetchingErorr(Exception): pass
 
-class NotMyFaultError(Exception): pass
+# EOF
