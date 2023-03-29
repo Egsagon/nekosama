@@ -16,6 +16,11 @@ segments_headers = {
     'Sec-Fetch-User': '?1'
 }
 
+bar_formating = {
+    # 'bar_format': '{desc} ╞{bar}╡ {n_fmt}/{total_fmt} ({percentage:3.0f}%)',
+    'ascii': ' -',
+}
+
 class Quality:
     BEST = 'best'
     WORST = 'worst'

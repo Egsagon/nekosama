@@ -67,7 +67,7 @@ The `Anime` object contains methods about getting anime data and episodes.
 - `download( path: str, pause: int, quality: int | str | constant) -> list[str]`: Download all the episodes from the anime, given a certain directory and quality.
 
 Most of those functions use a caching system. When they do, you can override the cache
-by specifying the `force: bool` argument to refresh the request, and the ``cache: bool`
+by specifying the `force: bool` argument to refresh the request, and the `cache: bool`
 argument to avoid (re)writing to the cache.
 
 Those functions also have an equivalent attribute which will call them when called.

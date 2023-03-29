@@ -5,6 +5,7 @@ import core.grabber as grabber
 
 import json
 import threading
+from tqdm import tqdm
 import requests as req
 import requests_html as hreq
 
@@ -410,7 +411,7 @@ class Episode:
         
         data = {}
         todo = copy(requests)
-        timeout = .05
+        bar = tqdm(total = len(chunks), desc = 'Downloading', **consts.bar_formating)
         
         while len(todo):
             current = todo.pop(0)
@@ -421,11 +422,16 @@ class Episode:
             sleep(timeout)
             
             # Debug
-            ld, lt = len(data), len(todo)
-            log.log(f'\rDownloading \033[91m{lt}\033[0m => \033[92m{ld}', end = '')
-            looping_callback(len(chunks) - lt, len(chunks), 'Downloading')
-        
-        log.newline() and log.log('Checking integrity...')
+            total = len(chunks)
+            done = total - len(todo)
+            
+            # log.log(f'\rDownloading \033[95m{done}\033[0m / \033[93m{total}', end = '')
+            looping_callback(done, total, 'Downloading')
+            
+            bar.update(1)
+            
+        bar.close() and log.newline()
+        log.log('Checking integrity...')
         
         # Check for missing chunks
         for i in range(len(chunks)):
@@ -433,7 +439,7 @@ class Episode:
                 
                 # Debug
                 log.log(f'Downloading missing chunk at \033[91m{i}')
-                looping_callback(i, len(chunks), 'Checking')
+                looping_callback(i, len(chunks), 'Checking') # TODO actual missing length
                 
                 # Get chunk request
                 mreq = [r for r in requests if r.url.endswith(f'{i}.ts')][0]
@@ -442,17 +448,22 @@ class Episode:
                 # Add to data
                 data[i] = raw
         
+        bar = tqdm(total = len(chunks), desc = 'Writing', **consts.bar_formating)
+        
         # Write chunks
         if ext: path += '.mp4'
         with open(path, 'wb') as file:
             
             for i in range(len(chunks)):
                 raw = data[i]
-                log.log(f'\rWriting to file (\033[92m{i + 1}\033[0m)', end = '')
+                
+                # log.log(f'\rWriting to file (\033[92m{i + 1}\033[0m)', end = '')
                 looping_callback(i, len(chunks), 'Writing')
+                bar.update(1)
+                
                 file.write(raw)
         
-        log.newline()
+        bar.close() and log.newline()
         log.log(f'Downloaded episode to \033[94m{path}')
         
         return path
