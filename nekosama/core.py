@@ -6,11 +6,11 @@ import requests
 import os
 import time
 import threading
-import subprocess
 from copy import copy
 
 import utils
 import consts
+
 
 class Episode:
     def __init__(self, url: str, session: requests.Session = None) -> None:
@@ -106,6 +106,8 @@ class Episode:
             
             # Dump back into todo
             if todo is not None:
+                # print('failed to download, todo:', req)
+                # TODO fails sometimes
                 return todo.append(req)
 
             # Retry in a bit
@@ -121,20 +123,6 @@ class Episode:
             
             data[key] = raw
     
-    def write_fragment(self, data: bytes, pipe: str, chunk_size = 8192) -> None:
-        '''
-        Write a fragment bytes to a pipe.
-        
-        From https://stackoverflow.com/questions/74256808
-        '''
-        
-        pipe_input = os.open(pipe, os.O_WRONLY)
-        
-        for i in range(0, len(data), chunk_size):
-            os.write(pipe_input, data[i:chunk_size + i])
-        
-        os.close(pipe_input)
-    
     def download(self,
                  path: str,
                  provider: str = consts.provider.BEST,
@@ -142,33 +130,42 @@ class Episode:
                  timeout: float = .051) -> None:
         '''
         Download the episode to a specific path.
+        
+        Path formating
+        {name}: name of the episode
+        {index}: index of the episode
+        {id}: neko sama id of the episode
         '''
         
+        # TODO
+        if '{name}' in path: path = path.format(name = 'NAME')
+        
         fragments = self.get_fragments(provider, quality)
-        print(len(fragments))
+        print(f'Downloading {len(fragments)} fragments')
         
         # Generate requests
-        req = [requests.Request('GET', url, consts.headers).prepare() for url in fragments]
+        reqs = [requests.Request('GET', url, consts.headers).prepare() for url in fragments]
         
         data = {}
-        todo = copy(req)
+        todo = copy(reqs)
+        
+        print('>', len(reqs), len(todo))
         
         while len(todo):
             cur = todo.pop(0)
             threading.Thread(target = self.get_fragment, args = [cur, data, todo, timeout]).start()
+            
+            print('\rDownloading', len(data), len(todo), end = '')
             time.sleep(timeout)
-            
-            total = len(req)
-            done = total - len(data)
-            
-            print('\rDownloading', done, '/', total, end = '')
         
-        print('Checking integrity')
+        print('\nChecking integrity')
         
-        for i, req_ in enumerate(req):
+        print('>', len(reqs), len(todo), len(data))
+        
+        for i, req_ in enumerate(reqs):
             
             if not i in data.keys():
-                print('missing', i)
+                print('* Redownloading', i)
                 raw = self.get_fragment(req_, timeout = timeout)
                 data[i] = raw
                 
@@ -177,27 +174,37 @@ class Episode:
         tmp = './tmp/'
         if not os.path.exists(tmp): os.mkdir(tmp)
         
-        with open(tmp + 'fragments.txt', 'a') as fragments_list:
+        with open(tmp + 'fragments.txt', 'w') as fragments_list:
             
-            for index, raw in data.items():
+            for index, raw in sorted(data.items()):
+                print(f'\r* {index + 1}/{len(data)}', end = '')
             
-                frag_path = tmp + str(index)
+                frag_path = str(index)
             
-                with open(frag_path, 'wb') as output:
+                with open(tmp + frag_path, 'wb') as output:
                     output.write(raw)
             
                 fragments_list.write(f'file {frag_path}\n')
         
-        print('Concatenating')
+        print('\nConcatenating')
         
-        # ffmpeg.input(tmp + 'fragments.txt', format = 'concat', safe = 0).output(path, c = 'copy').run()
+        ffmpeg.input(tmp + 'fragments.txt', format = 'concat', safe = 0)\
+            .output(path, c = 'copy').run(overwrite_output = True,
+                                          capture_stdout = False,
+                                          capture_stderr = True)
         
         # Delete temp dir
-        os.remove(tmp)
+        for file in os.listdir(tmp):
+            os.remove(tmp + file)
+        os.removedirs(tmp)
+        
+        print('Done')
 
-anime = Episode('https://neko-sama.fr/anime/episode/9520-tensei-shitara-slime-datta-ken-01_vostfr')
-start = time.time()
-anime.download('./test1.mp4', quality = consts.quality.WORST)
-print('Done in', time.time() - start)
+if __name__ == '__main__':
+
+    anime = Episode('https://neko-sama.fr/anime/episode/9520-tensei-shitara-slime-datta-ken-01_vostfr')
+    start = time.time()
+    anime.download('./downloaded-{NAME}.mp4', quality = consts.quality.WORST)
+    print('Done in', time.time() - start)
 
 # EOF
