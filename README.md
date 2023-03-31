@@ -1,4 +1,4 @@
-# NS Downloader
+# Neko Sama API
 
 Simple utilities to download animes from NS, especially the FHD backend (fusenet).
 
