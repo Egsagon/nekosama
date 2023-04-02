@@ -5,15 +5,26 @@ Constants.
 class re:
     # Bunch of useful regexes
     
-    providers = r"video\[\d\] = '.*';"
-    script = r'https://[a-z.]*\/[a-z\/-]*\?.*\" '
-    m3u8 = r'\"([a-zA-Z-0-9=]{25,})\"'
-    m3u8_urls = r'https.*\"'
+    ep_list    = r'var episodes = ([^;]*)'                              # Get eps list
+    providers  = r"video\[\d\] = '.*';"                                 # Get ep providers
+    script     = r'https://[a-z.]*\/[a-z\/-]*\?.*\" '                   # Get backend script
+    m3u8       = r'\"([a-zA-Z-0-9=]{25,})\"'                            # Get M3U8 info
+    m3u8_urls  = r'https.*\"'                                           # Get M3U8 urls
+    qualities  = r'NAME=\"\d*\"\nhttps://[^#]*'                         # Get quality urls
+    fragments  = r'https://.*'                                          # Get fragment urls
+    ep_id      = r'https://.*/episode/(\d*)'                            # Get episode id
+    ep_index   = r'https:\/\/.*\/episode\/.*-(\d*)_.*'                  # Get episode index
+    ep_name    = r'https:\/\/.*\/episode\/\d*-(.*)_'                    # Get episode name
+    en_an_name = r'https:\/\/.*\/episode\/\d*-(.*)_'
+    valid_ep   = r'https://neko-sama\.fr/anime/episode/\d*[a-z-\d_]*'   # Validate an episode
+    frag_index = r'\/(\d*)\.ts'                                         # Get fragment index
     
-    qualities = r'NAME=\"\d*\"\nhttps://[^#]*'
-    fragments = r'https://.*'
+    # Get url type (anime: info or episode), id, title, and language
+    glob_name  = r'https://.*/anime/(info|episode)/(\d*)-([a-z-\d]*)_(vostfr|vf)'
     
-    frag_index = r'\d*.ts'
+    # Get anime meta properties
+    ani_props  = r'<meta property=\"og:(?P<name>.*)\" content=\"([.\s\S]*?)\" />'
+    an_from_ep = r'href=\"(/anime/info/.*)\" class=\"cover\"'           # Get ani url from ep page
 
 class provider:
     # Providers presets
@@ -34,3 +45,5 @@ headers = {
     'Connection': 'keep-alive',
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'
 }
+
+root = 'https://neko-sama.fr'
