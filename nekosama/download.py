@@ -1,3 +1,8 @@
+'''
+List of backends used by the 
+core module to download animes.
+'''
+
 import os
 import re
 import time

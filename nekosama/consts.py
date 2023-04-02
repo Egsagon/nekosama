@@ -1,10 +1,12 @@
 '''
-Constants.
+Constants for the core module.
 '''
 
 class re:
-    # Bunch of useful regexes
-    # TODO refactor names
+    '''
+    Useful parsing regexes.
+    TODO refactor names
+    '''
     
     ep_list    = r'var episodes = ([^;]*)'                              # Get eps list
     providers  = r"video\[\d\] = '.*';"                                 # Get ep providers
@@ -27,13 +29,21 @@ class re:
     
 
 class provider:
-    # Providers presets
+    '''
+    Representations of providers.
+    Possible values: BEST, FUSE, PSTREAM.
+    '''
+    
     BEST = 'best'
     FUSE = 'fusenet'
     PSTREAM = 'pstream'
 
 class quality:
-    # Quality presets
+    '''
+    Quality presets. Can also
+    be an int instead.
+    '''
+    
     BEST = 'best'
     HALF = 'half'
     WORST = 'worst'

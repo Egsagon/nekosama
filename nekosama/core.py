@@ -1,3 +1,7 @@
+'''
+Core module for the API.
+'''
+
 import re
 import json
 import base64
@@ -19,6 +23,10 @@ class Episode:
                  session: requests.Session = None) -> None:
         '''
         Represents an Anime episode.
+        
+        
+        Arguments
+            url: the Episode url.
         '''
         
         self.url = url
@@ -52,6 +60,11 @@ class Episode:
             cache: bool = True) -> requests.Response:
         '''
         Get a page from the cache or fetch it.
+        
+        Arguments
+            url: the url to request
+            headers: the headers of the request
+            cache: whether to use cache for fetching.
         '''
         
         if cache and url in self.cache:
@@ -100,7 +113,7 @@ class Episode:
     @property
     def time(self) -> int:
         '''
-        The episode duration (in minutes)
+        The episode duration (in minutes).
         '''
         
         if self.data is None: self.get_data()
@@ -110,7 +123,7 @@ class Episode:
     def title(self) -> str:
         '''
         The episode title. For path naming,
-        use Episode.name
+        use Episode.name.
         '''
         
         if self.data is None: self.get_data()
@@ -133,6 +146,9 @@ class Episode:
     def download_image(self, path: str) -> None:
         '''
         Download the episode image.
+        
+        Arguments
+            path: the path to download to.
         '''
         
         if self.data is None: self.get_data()
@@ -154,8 +170,8 @@ class Episode:
         return self.providers
 
     def get_fragments(self,
-                           provider: str = consts.provider.BEST,
-                           quality: str | int = consts.quality.BEST) -> str:
+                      provider: str = consts.provider.BEST,
+                      quality: str | int = consts.quality.BEST) -> str:
         '''
         Get the raw m3u8 qualities list for this episode.
         '''
@@ -163,6 +179,7 @@ class Episode:
         # Get provider url (link to the player)
         if not len(self.providers): self.get_providers()
         provider_url = utils.select_provider(self.providers, provider)
+        print('[FRAG] Fetched provider', provider)
         
         # Get the provider link to its script
         src = self.get(provider_url , headers = consts.headers).text
@@ -173,6 +190,8 @@ class Episode:
         res = re.findall(consts.re.m3u8, src)[0]
         raw = base64.b64decode(res).decode()
         m3u = re.findall(consts.re.m3u8_urls, raw)[0].replace('\\', '')[:-1]
+        
+        print('[FRAG] Fetched m3u file')
         
         # Get the m3u file data
         src = self.get(m3u, headers = consts.headers).text
@@ -190,10 +209,21 @@ class Episode:
         '''
         Download the episode at a specific path.
         
-        Path formating:
-        {name}: name of the episode
-        {index}: index of the episode
-        {id}: neko sama id of the episode
+        Arguments
+            path: the path to download to
+            provider: the provider to use (constant)
+            quality: the quality to use (constant)
+            method: the backend to use
+            kwargs: backend arguments
+        
+        Quality type:
+            if <int>: get the nearest quality
+            if <str>: same as constants
+        
+        Path formating options:
+            {name}: name of the episode
+            {index}: index of the episode
+            {id}: neko sama id of the episode
         '''
         
         path = utils.ghost_format(
@@ -220,9 +250,14 @@ class Episode:
 
 
 class Anime:
-    def __init__(self, url: str, session: requests.Session = None) -> None:
+    def __init__(self,
+                 url: str,
+                 session: requests.Session = None) -> None:
         '''
         Represents an anime containing one or multiple episodes.
+        
+        Arguments
+            url: the anime page url
         '''
         
         self.url = url
@@ -254,10 +289,14 @@ class Anime:
             cache: bool = True) -> requests.Response:
         '''
         Get a page from the cache or fetch it.
+        
+        Arguments
+            url: the url to request
+            headers: the headers of the request
+            cache: whether to use cache for fetching.
         '''
         
         if cache and url in self.cache:
-            print('USING CACHED')
             return self.cache.get(url)
         
         req = self.session.get(url, headers = headers)
@@ -283,12 +322,12 @@ class Anime:
         The anime title.
         '''
         
-        return self.data['title'] # TODO remove lang
+        return self.data['title'].replace(' | Neko-sama', '')
     
     @property
     def description(self) -> str:
         '''
-        The raw anime description
+        The raw anime description.
         '''
         
         return self.data['description']
@@ -308,6 +347,9 @@ class Anime:
     def download_image(self, path: str) -> None:
         '''
         Download the anime image.
+        
+        Arguments
+            path: the path to download to.
         '''
         
         url = self.data['image']
@@ -319,6 +361,9 @@ class Anime:
     def download_background(self, path: str) -> None:
         '''
         Download the background image of the anime.
+        
+        Arguments
+            path: the path to download to.
         '''
         
         src = self.get(self.url).text
@@ -330,7 +375,7 @@ class Anime:
     
     def get_episodes(self) -> list[Episode]:
         '''
-        Get all the episodes from a page.
+        Get all the anime episodes.
         '''
         
         src = self.get(self.url).text
@@ -367,11 +412,22 @@ class Anime:
         '''
         Download all the episodes to a directory
         and return all the paths.
+        
+        Arguments
+            directory: the folder to download to.
+            name_format: see Episode.download.
+            provider, quality, method: backend args.
+            timeout: pause between each download.
+        
+        Returns a list of pathes.
         '''
         
         pathes = []
         
         for episode in self.episodes:
+            
+            print('Downloading', episode)
+            
             path = episode.download(
                 path = directory + name_format,
                 provider = provider,
@@ -400,6 +456,11 @@ class Client:
             cache: bool = True) -> requests.Response:
         '''
         Get a page from the cache or fetch it.
+        
+        Arguments
+            url: the url to request
+            headers: the headers of the request
+            cache: whether to use cache for fetching.
         '''
         
         if cache and url in self.cache:
@@ -416,34 +477,38 @@ class Client:
     def get_anime(self, url: str) -> Anime:
         '''
         Fetch an anime from the website.
+        
+        Arguments
+            url: the url of the anime.
         '''
         
         return Anime(url, self.session)
 
     def search(self,
-                     name: str | re.Pattern = None,
-                     lang: str | tuple = None,
-                     id: int | re.Pattern = None,
-                     type: list[str] = [],
-                     genres: list[str] = [],
-                     score: str = None,
-                     date: str = None,
-                     filter: Callable[[dict], bool] = None) -> list[Anime]:
+               name: str | re.Pattern = None,
+               lang: str | tuple = None,
+               id: int | re.Pattern = None,
+               type: list[str] = [],
+               genres: list[str] = [],
+               score: str = None,
+               date: str = None,
+               limit: int = None,
+               filter: Callable[[dict], bool] = None) -> list[Anime]:
         '''
         Search for animes that match a query.
         
         Arguments
             name: the name of the anime or a part of it.
             lang: VOSTFR or VF or a tuple of both.
-            id:    the anime id.
-            type: a list of anime types ('m0v1e', etc.) # TODO
+            id: the anime id.
+            type: a list of anime tags ('m0v1e', etc.) # TODO
             genres: a list of genres (shounen, action, etc.).
             score: score filter (e.g. '>4').
             date: release date filter (e.g. '>2010' or '2000<{}<2010').
+            limit: stop after n animes.
             filter: callable that handle further filtering.
         
-        Returns
-            A list of Anime objects.
+        Returns a list of Anime objects.
         '''
         
         # Lang is needed first to retrieve the files
@@ -461,6 +526,9 @@ class Client:
         # Filter for animes
         filtered = []
         for anime in file:
+            # Limit
+            if limit is not None and len(filtered) > limit - 1:
+                break
             
             # User callable overrides all if set
             if filter is not None:
