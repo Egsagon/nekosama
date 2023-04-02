@@ -293,12 +293,36 @@ class Anime:
         
         return self.data['description']
     
+    @property
+    def tags(self) -> list[str]:
+        '''
+        Identification tabs for searching.
+        '''
+        
+        raw = self.get(self.url).text
+        tags = set(re.findall(consts.re.ani_tags, raw))
+        tags.remove('genres')
+        
+        return list(tags)
+    
     def download_image(self, path: str) -> None:
         '''
         Download the anime image.
         '''
         
         url = self.data['image']
+        raw = self.get(url).content
+        
+        with open(path, 'wb') as output:
+            output.write(raw)
+    
+    def download_background(self, path: str) -> None:
+        '''
+        Download the background image of the anime.
+        '''
+        
+        src = self.get(self.url).text
+        url = re.findall(consts.re.ep_bg, src)[0]
         raw = self.get(url).content
         
         with open(path, 'wb') as output:
@@ -359,10 +383,7 @@ class Anime:
             sleep(timeout)
         
         return pathes
-            
-            
-            
-    
+
 
 class Client:
     def __init__(self) -> None:

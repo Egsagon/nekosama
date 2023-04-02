@@ -4,6 +4,7 @@ Constants.
 
 class re:
     # Bunch of useful regexes
+    # TODO refactor names
     
     ep_list    = r'var episodes = ([^;]*)'                              # Get eps list
     providers  = r"video\[\d\] = '.*';"                                 # Get ep providers
@@ -15,16 +16,15 @@ class re:
     ep_id      = r'https://.*/episode/(\d*)'                            # Get episode id
     ep_index   = r'https:\/\/.*\/episode\/.*-(\d*)_.*'                  # Get episode index
     ep_name    = r'https:\/\/.*\/episode\/\d*-(.*)_'                    # Get episode name
-    en_an_name = r'https:\/\/.*\/episode\/\d*-(.*)_'
     valid_ep   = r'https://neko-sama\.fr/anime/episode/\d*[a-z-\d_]*'   # Validate an episode
     frag_index = r'\/(\d*)\.ts'                                         # Get fragment index
-    
-    # Get url type (anime: info or episode), id, title, and language
-    glob_name  = r'https://.*/anime/(info|episode)/(\d*)-([a-z-\d]*)_(vostfr|vf)'
-    
-    # Get anime meta properties
-    ani_props  = r'<meta property=\"og:(?P<name>.*)\" content=\"([.\s\S]*?)\" />'
+    ani_tags   = r'&quot;(.*?)&quot;'                                   # Get anime search tags
     an_from_ep = r'href=\"(/anime/info/.*)\" class=\"cover\"'           # Get ani url from ep page
+    ep_bg      = r'\"head\" style=\"background-image: url\((https://.*)\)' # Get ep bg image url
+    
+    glob_name  = r'https://.*/anime/(info|episode)/(\d*)-([a-z-\d]*)_(vostfr|vf)' # Get url data
+    ani_props  = r'<meta property=\"og:(?P<name>.*)\" content=\"([.\s\S]*?)\" />' # Get meta props
+    
 
 class provider:
     # Providers presets
