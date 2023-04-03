@@ -408,7 +408,8 @@ class Anime:
                  provider: str = consts.provider.BEST,
                  quality: str = consts.quality.BEST,
                  method: str = 'ffmpeg',
-                 timeout = 5) -> list[str]:
+                 timeout = 5,
+                 start: int = 0) -> list[str]:
         '''
         Download all the episodes to a directory
         and return all the paths.
@@ -424,7 +425,7 @@ class Anime:
         
         pathes = []
         
-        for episode in self.episodes:
+        for episode in self.episodes[start:]:
             
             print('Downloading', episode)
             
@@ -435,7 +436,7 @@ class Anime:
                 method = method
             )
             
-            pathes += path
+            pathes += [path]
             sleep(timeout)
         
         return pathes
