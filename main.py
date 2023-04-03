@@ -1,7 +1,12 @@
 import nekosama as ns
 
-anime = ns.Anime('https://neko-sama.fr/anime/info/5944-jormungand_vostfr')
+if __name__ != '__main__': exit()
 
-anime.download('jmg/', '{index}.mp4', timeout = 10, start = 5)
+anime = ns.Anime('url-here')
+
+anime.download('path/',
+               '{index}.mp4',
+               timeout = 10,
+               start = 5)
 
 # EOF
