@@ -78,6 +78,23 @@ class Episode:
         self.cache[url] = req
         return req
     
+    def clear_cache(self, all: bool = True) -> None:
+        '''
+        Clear the instance cache.
+        
+        Arguments
+            all: whether to clear all caches.
+                 if False, the data cache will be kept.
+        '''
+        
+        # Clear request and urls caches
+        self.cache.clear()
+        self.providers.clear()
+        
+        # Clear the data cache
+        if not all:
+            self.cached_data.clear()
+    
     @property
     def data(self) -> dict[str]:
         '''
@@ -307,6 +324,18 @@ class Anime:
         self.cache[url] = req
         return req
     
+    def clear_cache(self, all: bool = True) -> None:
+        '''
+        Clear the instance cache.
+        
+        Arguments
+            all: whether to clear all caches.
+                 if False, the episodes cache will be kept.
+        '''
+        
+        self.cache.clear()
+        if not all: self.cached_episodes.clear()
+    
     @property
     def data(self) -> dict[str]:
         '''
@@ -474,6 +503,15 @@ class Client:
         
         self.cache[url] = req
         return req
+    
+    def clear_cache(self) -> None:
+        '''
+        Clear the instance cache.
+        In particular, erase the list of episodes
+        to search in.
+        '''
+        
+        self.cache.clear()
     
     def get_anime(self, url: str) -> Anime:
         '''
