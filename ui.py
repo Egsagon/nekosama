@@ -1,10 +1,11 @@
 '''
 Simple tkinter ui example
 for the nekosama API.
+
+TODO - Threads?
 '''
 
 import nekosama
-import threading
 
 import tkinter as tk
 import tkinter.filedialog as tkf
@@ -119,9 +120,27 @@ class App(tk.Tk):
         self.selection.delete(0, tk.END)
         self.selection.insert(0, *[e.name for e in episodes])
     
+    def update_bar(self, status: str, cur: int, total: int | None) -> None:
+        '''
+        Called by the download method to update the bar positions.
+        '''
+        
+        print(status, cur, total, cur / total * 100)
+        
+        self.title(status)
+        
+        if total is not None:
+            self.local_progress.config(value = cur / total * 100)
+        
+        else:
+            self.local_progress.config(mode = 'indeterminate')
+            self.local_progress.step()
+        
+        self.update()
+    
     def download(self, *_) -> None:
         '''
-        Download one or multiple animes.
+        Download one or multiple episodes.
         '''
         
         episodes = [self.anime.episodes[i] for i in
@@ -149,7 +168,14 @@ class App(tk.Tk):
         for episode in episodes:
             
             # TODO threadify
-            episode.download(path + episode.name + '.mp4')
+            # episode.download(path + episode.name + '.mp4')
+            
+            episode.download(
+                path + episode.name + '.mp4',
+                method = 'ffmpeg', # thread_
+                callback = self.update_bar,
+                quiet = True
+            )
             
             sleep(self, 3)
             self.global_progress.step()

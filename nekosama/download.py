@@ -140,7 +140,7 @@ def bk_base_thread(raw: str,
         time.sleep(timeout)
         
         # Debug
-        if callback is not None: callback('downloading', len(data), len(todo))
+        if callback is not None: callback('downloading', len(data), len(chunks))
         
         if not quiet:
             print(f'[ BK ] Downloading chunk ({len(todo)} left)')
