@@ -124,17 +124,18 @@ such has using a specific path formating, quality or provider. See its docstring
 
 The `Anime` and `Episode` objects can use different methods/backends to download a video.
 
-| Backend name    | Download | Concat | Description                                        | Time |
-| --------------- | -------- | ------ | -------------------------------------------------- | ---- |
-| 'ffmpeg'        | FFMPEG   | FFMPEG | Fully rely on ffmpeg                               | 95s  |
-| 'thread'        | Threads  | Dummy  | Fast fetching                                      | 56s  |
-| 'thread_ffmpeg' | Threads  | FFMPEG | Fast download with ffmpeg                          | 80s  |
-| 'safe'          | Dummy    | Dummy  |Dummy simple fallback                               | 160s |
+| Backend name    | Download | Concat | Description               | Time |
+| --------------- | -------- | ------ | ------------------------- | ---- |
+| 'ffmpeg'        | FFMPEG   | FFMPEG | Fully rely on ffmpeg      | 95s  |
+| 'thread'        | Threads  | Dummy  | Fast fetching             | 48s  |
+| 'thread_ffmpeg' | Threads  | FFMPEG | Fast download with ffmpeg | 70s  |
+| 'safe'          | Dummy    | Dummy  | Dummy simple fallback     | 160s |
 
 ###### Note 1: The usage of FFMPEG is not always nescessary.
 ###### Note 2: While the `threads` backends are the fatest backends, they might produce some errors where ffmpeg won't.
-###### Note 3: The downloading time is there only for comparison, it almost entirely depends on the system connection.
+###### Note 3: The downloading time is there only for comparison, it almost entirely depends on the system internet connection.
 
 # TODO
 
 - UI example
+- Advanced verbose on ffmpeg backends (raw or parsed)

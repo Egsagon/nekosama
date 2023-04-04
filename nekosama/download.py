@@ -1,9 +1,6 @@
 '''
 List of backends used by the 
 core module to download animes.
-
-TODO - quiet arg on all backends
-TODO - refactor all backends
 '''
 
 import os
@@ -16,13 +13,11 @@ import requests
 import threading
 
 from typing import Callable
-
 from nekosama import consts
 from nekosama import utils
 
 # Get the FFMPEG path
 FFMPEG = shutil.which('ffmpeg')
-
 
 BACKENDS = [
     'ffmpeg',
@@ -41,6 +36,7 @@ def reach(method: str) -> Callable:
     
     if FFMPEG is None and 'ffmpeg' in method:
         print('[ BK ] FFMPEG is not installed, falling back to safe')
+        method = 'safe'
     
     return eval('bk_' + method)
 
@@ -54,9 +50,13 @@ def bk_ffmpeg(raw: str,
     Download using the ffmpeg download feature.
     '''
 
+    # Get the total count
+    lenght = len(re.findall(consts.re.fragments, raw))
+
     # Write the m3u8 file for ffmpeg
     with open('temp.m3u', 'w') as file: file.write(raw)
     
+    # Create the FFMPEG command
     command = [
         FFMPEG,
         '-protocol_whitelist', 'file,http,https,tcp,tls,crypto',
@@ -67,22 +67,21 @@ def bk_ffmpeg(raw: str,
     ]
     
     def log(line: str) -> None:
-        '''Called each time ffmpeg outputs a line.'''
+        # Decide whether to execute the callback or not
+        # for each line.
         
-        if 'https://' in line and '.ts' in line:
-            cur = line.split('.ts')[0].split('/')[-1]
-            
-            if callback is not None:
-                callback(cur)
+        key = re.findall(consts.re.frag_index, line)
         
+        if len(key) and callback is not None:
+            callback('downloading', int(key[0]) + 1, lenght)
+
         if not quiet:
             print(line, end = '')
     
-    code = utils.popen(command, log)
+    # Start FFMPEG
+    assert utils.popen(command, log) == 0
     
-    if code != 0: print('Command raised error', code)
-    
-    # Delete the temp file
+    # Delete the m3u8 file
     os.remove('temp.m3u')
 
 def dl_frag(req: requests.PreparedRequest,
@@ -113,6 +112,7 @@ def dl_frag(req: requests.PreparedRequest,
 def bk_base_thread(raw: str,
                    timeout: float = .05,
                    callback: Callable = None,
+                   quiet: bool = False,
                    **kwargs) -> dict[int, bytes]:
     '''
     Download each fragment using threads.
@@ -140,15 +140,20 @@ def bk_base_thread(raw: str,
         time.sleep(timeout)
         
         # Debug
-        if callback is not None: callback(len(data))
-        # print('*', len(data), len(todo))
+        if callback is not None: callback('downloading', len(data), len(todo))
+        
+        if not quiet:
+            print(f'[ BK ] Downloading chunk ({len(todo)} left)')
     
     # Check for missing chunks
     for i in range(len(chunks)):
         if not i in data.keys():
             
             # Debug
-            print('Downloading missing', i)
+            if not quiet: print('Downloading missing', i)
+            
+            if callback is not None:
+                callback('downloading missing', i, len(chunks))
             
             # Get chunk request
             mreq = [r for r in reqs if r.url.endswith(f'{i}.ts')][0]
@@ -160,6 +165,7 @@ def bk_thread(raw: str,
               path: str,
               timeout: float = .05,
               callback: Callable = None,
+              quiet: bool = False,
               **kwargs) -> None:
     '''
     Download each fragment using threads.
@@ -169,14 +175,22 @@ def bk_thread(raw: str,
     # Fetch the chunks
     chunks = bk_base_thread(raw = raw,
                             timeout = timeout,
-                            callback = callback)
+                            callback = callback,
+                            quiet = quiet)
     
     # Write them to the file
     with open(path, 'wb') as output:
         for key in sorted(chunks.keys()):
-            print('Writing', key)
-            if callback is not None: callback(key)
+            
+            if not quiet:
+                print(f'\r[ BK ] Downloading: {key}/{chunks}', end = '')
+            
+            if callback is not None:
+                callback('writing', key, len(chunks))
+            
             output.write(chunks[key])
+        
+        if not quiet: print()
     
     return
     
@@ -184,6 +198,7 @@ def bk_thread_ffmpeg(raw: str,
                      path: str,
                      timeout: float = .05,
                      callback: Callable = None,
+                     quiet: bool = False,
                      **kwargs) -> None:
     '''
     Same as thread, but uses ffmpeg to concatenate.
@@ -192,7 +207,8 @@ def bk_thread_ffmpeg(raw: str,
     # Fetch the chunks
     chunks = bk_base_thread(raw = raw,
                             timeout = timeout,
-                            callback = callback)
+                            callback = callback,
+                            quiet = quiet)
     
     temp = 'temp/'
     track = []
@@ -207,16 +223,20 @@ def bk_thread_ffmpeg(raw: str,
         with open(frag_path, 'wb') as frag:
             frag.write(chunk)
         
-        print('Writing', index)
+        if not quiet:
+            print(f'\r[ BK ] Writing {index}/{len(chunks)}', end = '')
+        
+        if callback is not None:
+            callback('writing', index, len(chunks))
+        
         track += [f'file {index}.ts']
     
     with open(temp + 'track', 'w') as file:
         file.write('\n'.join(track))
     
-    print('Wrote to temp, concatenating')
+    if not quiet: print('[ BK ] Concatenating')
     
-    # Concatenate ts files and run ffmpeg
-    # https://superuser.com/questions/692990
+    # Concatenate ts files with ffmpeg
     
     command = [
         FFMPEG, '-f', 'concat',
@@ -225,9 +245,22 @@ def bk_thread_ffmpeg(raw: str,
         '-c', 'copy', path, '-y'
     ]
     
-    assert utils.popen(command, lambda l: print([l])) == 0
+    def log(line: str) -> None:
+        # Decide to execute the callback
+        # for a line or not.
+        
+        if line.startswith('\nframe='):
+            cur = line[8:].split()[0]
+            
+            if callback is not None:
+                callback('concatenating', int(cur), None)
+        
+        if not quiet:
+            print(line, end = '')
     
-    print('Done. Erasing cache')
+    assert utils.popen(command, log) == 0
+    
+    if not quiet: print('Deleting temp files')
     
     # Delete the temp files
     for file in os.listdir(temp):
@@ -237,6 +270,7 @@ def bk_safe(raw: str,
             path: str,
             timeout: float = 0,
             callback: Callable = None,
+            quiet: bool = False,
             **kwargs) -> None:
     '''
     Download one segment at a time, and concatenate their
@@ -249,8 +283,10 @@ def bk_safe(raw: str,
     with open(path, 'wb') as output:
         for i, url in enumerate(fragments):
             
-            if callback: callback(str(i))
-            # print(f'\r * {i}', end = '')
+            if callback: callback('downloading', i, len(fragments))
+            
+            if not quiet:
+                print('Downloading', i)
             
             output.write(
                 session.get(url, headers = consts.headers).content
