@@ -120,9 +120,21 @@ episode.download('ep_1.mp4') # Download the episode
 The `episode.download` method has multiple other parameters,
 such has using a specific path formating, quality or provider. See its docstring for reference.
 
+## Backends
+
+The `Anime` and `Episode` objects can use different methods/backends to download a video.
+
+| Backend name    | Download | Concat | Description                                        | Time |
+| --------------- | -------- | ------ | -------------------------------------------------- | ---- |
+| 'ffmpeg'        | FFMPEG   | FFMPEG | Fully rely on ffmpeg                               | 95s  |
+| 'thread'        | Threads  | Dummy  | Fast fetching                                      | 56s  |
+| 'thread_ffmpeg' | Threads  | FFMPEG | Fast download with ffmpeg                          | 80s  |
+| 'safe'          | Dummy    | Dummy  |Dummy simple fallback                               | 160s |
+
+###### Note 1: The usage of FFMPEG is not always nescessary.
+###### Note 2: While the `threads` backends are the fatest backends, they might produce some errors where ffmpeg won't.
+###### Note 3: The downloading time is there only for comparison, it almost entirely depends on the system connection.
 
 # TODO
 
-- Logging
 - UI example
-- Refactor regexes

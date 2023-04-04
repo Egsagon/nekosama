@@ -13,7 +13,6 @@ import copy
 
 import shutil
 import requests
-import platform
 import threading
 
 from typing import Callable
@@ -142,7 +141,7 @@ def bk_base_thread(raw: str,
         
         # Debug
         if callback is not None: callback(len(data))
-        print('*', len(data), len(todo))
+        # print('*', len(data), len(todo))
     
     # Check for missing chunks
     for i in range(len(chunks)):
@@ -195,7 +194,7 @@ def bk_thread_ffmpeg(raw: str,
                             timeout = timeout,
                             callback = callback)
     
-    temp = './temp/'
+    temp = 'temp/'
     track = []
     
     # Create temp folder if needed
@@ -203,25 +202,32 @@ def bk_thread_ffmpeg(raw: str,
     
     for index, chunk in chunks.items():
         
-        with open(temp + str(index), 'wb') as frag:
+        frag_path = temp + str(index) + '.ts'
+        
+        with open(frag_path, 'wb') as frag:
             frag.write(chunk)
         
         print('Writing', index)
-        track += [temp + index]
-        
+        track += [f'file {index}.ts']
+    
+    with open(temp + 'track', 'w') as file:
+        file.write('\n'.join(track))
+    
     print('Wrote to temp, concatenating')
     
-    # Concatenate ts files
+    # Concatenate ts files and run ffmpeg
     # https://superuser.com/questions/692990
-    if platform.system() == 'Windows' or False:
-        command = ['copy', '/b', '', path]
     
-    else:
-        command = ['cat'] + track + ['>', path]
+    command = [
+        FFMPEG, '-f', 'concat',
+        '-safe', '0',
+        '-i', temp + 'track',
+        '-c', 'copy', path, '-y'
+    ]
     
-    print('Executing command', command)
+    assert utils.popen(command, lambda l: print([l])) == 0
     
-    # utils.popen(command)
+    print('Done. Erasing cache')
     
     # Delete the temp files
     for file in os.listdir(temp):

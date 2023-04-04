@@ -441,6 +441,7 @@ class Anime:
                  method: str = 'ffmpeg',
                  timeout = 5,
                  start: int = 0,
+                 end: int = 0,
                  **kwargs) -> list[str]:
         '''
         Download all the episodes to a directory
@@ -459,7 +460,7 @@ class Anime:
         
         print(f'[ AN ] Downloading anime {self.title}')
         
-        for episode in self.episodes[start:]:
+        for episode in self.episodes[start:end]:
             
             path = episode.download(
                 path = directory + name_format,
