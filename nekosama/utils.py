@@ -3,6 +3,7 @@ Utilities for the core module.
 '''
 
 import re
+import subprocess
 from nekosama import consts
 
 from typing import Callable
@@ -179,5 +180,41 @@ def match_string(match_: str, value: str | re.Pattern) -> bool:
     
     # return (a in b) or (b in a) # not strict enough
     return (a == b) or (b in a)
+
+def popen(args: list[str], callback: Callable[[str], None]) -> int:
+    '''
+    Execute a shell command. Each time a line is outputed,
+    call the passed callback.
+    Returns the returned code.
+    '''
+    
+    proc = subprocess.Popen(
+        args,
+        stdout = subprocess.PIPE,
+        stderr = subprocess.STDOUT,
+        text = True,
+        shell = True
+    )
+    
+    # TODO Refactor
+    
+    current_line = ''
+    
+    while True:
+        out = proc.stdout.read(1)
+        
+        if out == '' and proc.poll() != None: break
+        
+        if out != '':
+            if (len(current_line) and \
+                current_line[-1] == '\\' and \
+                out == 'n' ) or out == '\n':
+                
+                callback(current_line)
+                current_line = ''
+            
+            current_line += out
+            
+    return proc.poll()
 
 # EOF

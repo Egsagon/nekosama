@@ -42,7 +42,7 @@ class Episode:
         
         # Error protection
         if self.info['type'] != 'episode':
-            raise Exception('Invalid url', url)
+            raise Exception('Invalid URL', url)
         
         self.id = self.info['id']
         self.name = self.info['name']
@@ -73,7 +73,8 @@ class Episode:
         req = self.session.get(url, headers = headers)
         
         # Error protection
-        if not req.ok: raise ConnectionError(req.status_code, req.content)
+        if not req.ok:
+            raise ConnectionError(req.status_code, req.content)
         
         self.cache[url] = req
         return req
@@ -255,9 +256,10 @@ class Episode:
         
         # Start the download
         backend = download.reach(method)
-        print('Using backend', backend)
+        # print('Using backend', backend)
         
         try:
+            print(f'[ EP ] Downloading episode {self.index}')
             backend(raw = raw, path = path, **kwargs)
         
         except Exception as err:
@@ -438,7 +440,8 @@ class Anime:
                  quality: str = consts.quality.BEST,
                  method: str = 'ffmpeg',
                  timeout = 5,
-                 start: int = 0) -> list[str]:
+                 start: int = 0,
+                 **kwargs) -> list[str]:
         '''
         Download all the episodes to a directory
         and return all the paths.
@@ -454,15 +457,16 @@ class Anime:
         
         pathes = []
         
+        print(f'[ AN ] Downloading anime {self.title}')
+        
         for episode in self.episodes[start:]:
-            
-            print('Downloading', episode)
             
             path = episode.download(
                 path = directory + name_format,
                 provider = provider,
                 quality = quality,
-                method = method
+                method = method,
+                **kwargs
             )
             
             pathes += [path]
