@@ -32,9 +32,8 @@ and a ui in the `ui.py` file.
 
 # Setup
 
-- Install the python ackages:
-    - `requests`,
-    - `pytyhon-ffmpeg`
+- Install the pip package `requests` (should be built-in)
+
 
 - Clone the repository:
 ```sh
@@ -42,6 +41,8 @@ git clone https://github.com/Egsagon/neko-sama-api
 cd neko-sama-api/
 python3 main.py
 ```
+
+- Optionally, install FFMPEG to your system.
 
 # Docs
 
@@ -74,7 +75,7 @@ from the `Client.get_anime` method or with a specifif url:
 ```python
 >>> anime = ns.Anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datta-ken_vostfr')
 >>> anime.title
-Tensei Shitara Slime Datta Ken VOSTFR | Neko-sama
+Tensei Shitara Slime Datta Ken VOSTFR
 >>> anime.description
 Aucun synopsis pour le moment.
 ```

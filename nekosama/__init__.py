@@ -1,5 +1,7 @@
 '''
 API wrapper for the neko-sama website.
+
+https://github.com/Egsagon/neko-sama-api
 '''
 
 
