@@ -7,12 +7,13 @@ TODO - Threads?
 
 import nekosama
 
+from time import time
+
 import tkinter as tk
 import tkinter.filedialog as tkf
 import tkinter.messagebox as tkm
 from tkinter.ttk import Progressbar
 
-from time import time
 
 def sleep(root: tk.Tk, duration: float) -> None:
     
@@ -109,7 +110,7 @@ class App(tk.Tk):
                 return tkm.showerror('Error', 'Invalid url', value, e)
         
         else:
-            animes = self.client.search(value, limit = 10)
+            animes = self.client.search(value, limit = 30)
         
         # Choose one anime
         anime = self.select_anime(animes)
@@ -125,12 +126,11 @@ class App(tk.Tk):
         Called by the download method to update the bar positions.
         '''
         
-        print(status, cur, total, cur / total * 100)
-        
+        print(status.capitalize(), f'({cur}/{total})')
         self.title(status)
         
         if total is not None:
-            self.local_progress.config(value = cur / total * 100)
+            self.local_progress.config(value = cur / total * 100, mode = 'determinate')
         
         else:
             self.local_progress.config(mode = 'indeterminate')
@@ -167,12 +167,9 @@ class App(tk.Tk):
         # Download
         for episode in episodes:
             
-            # TODO threadify
-            # episode.download(path + episode.name + '.mp4')
-            
             episode.download(
                 path + episode.name + '.mp4',
-                method = 'ffmpeg', # thread_
+                method = 'thread_ffmpeg',
                 callback = self.update_bar,
                 quiet = True
             )
@@ -182,6 +179,7 @@ class App(tk.Tk):
             self.update()
         
         tkm.showinfo('Done', 'Operation finished.')
+
 
 if __name__ == '__main__':
     App().mainloop()
