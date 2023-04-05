@@ -7,6 +7,8 @@ TODO - Threads?
 
 import nekosama
 
+from nekosama.download import BACKENDS
+
 from time import time
 
 import tkinter as tk
@@ -46,23 +48,38 @@ class App(tk.Tk):
         url_box = tk.Frame(main)
         self.url = tk.Entry(url_box)
         self.url.bind('<Return>', self.search)
-        url_get = tk.Button(url_box, text = 'GET', command = self.search)
+        self.url_get = tk.Button(url_box, text = 'GET', command = self.search)
         
         # Query response and progress section
         self.selection = tk.Listbox(main, selectmode = 'multiple')
-        self.start = tk.Button(main, text = 'Download', height = 2,
-                               command = self.download)
+        
+        options = tk.Frame(main)
+        sub_options = tk.Frame(options)
+        
+        self.quality = tk.StringVar(self, '--Set quality--')
+        self.backend = tk.StringVar(self, '--Set backend--')
+        
+        sel_qual = tk.OptionMenu(sub_options, self.quality, '0', 'Best', 'Half', 'Worst', 1080, 720, 480)
+        sel_back = tk.OptionMenu(sub_options, self.backend, '0', *BACKENDS)
+        
+        self.start = tk.Button(options, text = 'Download', height = 2, command = self.download)
         
         self.local_progress = Progressbar(main)
         self.global_progress = Progressbar(main)
 
         # Pack widgets
         self.url.pack(side = 'left', fill = 'x', expand = True)
-        url_get.pack(side = 'right', padx= (12, 0))
+        self.url_get.pack(side = 'right', padx= (12, 0))
         url_box.pack(fill = 'x', **pad)
         
         self.selection.pack(fill = 'both', expand = True, padx = 12)
-        self.start.pack(fill = 'x', **pad)
+        
+        sel_qual.pack(side = 'top')
+        sel_back.pack(side = 'bottom')
+        self.start.pack(fill = 'x', expand = True, side = 'right', **pad)
+        sub_options.pack(side = 'left')
+        options.pack(fill = 'x', **pad)
+        
         self.local_progress.pack(fill = 'x', padx = 12)
         self.global_progress.pack(fill = 'x', padx = 12, pady = (6, 12))
         
@@ -101,6 +118,7 @@ class App(tk.Tk):
         '''
         
         value = self.url.get()
+        self.url_get.config(state = 'disabled')
 
         if 'https://' in value:
             try:
@@ -120,6 +138,8 @@ class App(tk.Tk):
         # Add to selection
         self.selection.delete(0, tk.END)
         self.selection.insert(0, *[e.name for e in episodes])
+        
+        self.url_get.config(state = 'enabled')
     
     def update_bar(self, status: str, cur: int, total: int | None) -> None:
         '''
@@ -142,6 +162,13 @@ class App(tk.Tk):
         '''
         Download one or multiple episodes.
         '''
+        
+        
+        quality = self.quality.get().lower()
+        backend = self.backend.get().lower()
+        
+        if '--' in quality and '--' in backend:
+            return tkm.showerror('Error', 'Select a backend and a quality first.')
         
         episodes = [self.anime.episodes[i] for i in
                     self.selection.curselection()]
@@ -169,7 +196,8 @@ class App(tk.Tk):
             
             episode.download(
                 path + episode.name + '.mp4',
-                method = 'thread_ffmpeg',
+                method = backend,
+                quality = quality,
                 callback = self.update_bar,
                 quiet = True
             )
