@@ -1,4 +1,4 @@
-# neko-sama-api
+# NEKO SAMA API
 
 An API that scraps the `neko-sama.fr` website.
 Is able to search, fetch and download animes.
