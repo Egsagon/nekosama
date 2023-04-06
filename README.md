@@ -1,4 +1,4 @@
-## Note: this branch is outdated.
+## :warning: This branch is outdated as it rely on too brutal and not stable web scrapping. Consider using the version from the newest version instead.
 
 # Neko Sama API
 
