@@ -1,34 +1,87 @@
-import time
 import nekosama
+from time import time, sleep
+import tkinter.filedialog as file
 
-# Initialise the client
 client = nekosama.Client()
 
-# Fetch the anime
-anime = client.get_anime('https://neko-sama.fr/anime/info/13532-kaguya-sama-wa-kokurasetai-tensai-tachi-no-renai-zunousen_vostfr')
+query = input('> Enter query or URL: ')
 
-def log(status: str, cur: int, total: int | None) -> None:
+if not 'https://' in query:
     
-    print([status, cur, total])
-
-start = time.time()
-
-# Download
-anime.download(
-    'tests/',
-    'ff.mp4',
+    animes = client.search(query, limit = 10)
     
-    # Settings
-    timeout = 0,
-    start = 0,
-    end = 1,
+    print(f'Found {len(animes)} animes for \033[92m{query}\033[0m:')
     
-    # Backend arguments
-    method = 'safe',
-    callback = log,
-    quiet = True
-)
+    for i, a in enumerate(animes):
+        print(f'\t* {i}. {a.name}')
+    
+    index = int(input('> Select index (default=0): ') or 0)
+    
+    anime = animes[index]
 
-print('Done in', time.time() - start)
+else:
+    anime = client.get_anime(query)
 
-# EOF
+print(f'Selected anime: \033[92m{anime.title}\033[0m')
+
+start = int(input('> Set range start (default=0): ') or 0)
+end = eval(input('> Set range end (default=-1): ') or 'None')
+
+episodes = anime.episodes[start:end]
+
+path = input('> Set path (default=tkinter): ') or file.askdirectory()
+
+assert path
+
+if not path[-1] in '/\\': path += '/'
+
+timeout = int(input('> Set request timeout (default=5): ') or 5)
+
+backend = input('Set backend (default=ffmpeg): ') or 'ffmpeg'
+
+print(f'Downloading {len(episodes)} episodes:')
+
+for i, ep in enumerate(episodes):
+    print(f'\t* {i}. {ep.name}')
+
+input('> Download ready. Press enter to continue. ')
+
+print('\n\033[92m=> Starting download!\033[0m')
+
+global_start_time = time()
+times = []
+times_wtm = []
+
+def debug(status, current, total) -> None:
+    # Debug backend callable
+    
+    print(f'\r\t\033[93m?\033[0m {status} [{current} / {total}]', end = '')
+
+for episode in episodes:
+    
+    episode_start_time = time()
+    
+    print('\n* Downloading', episode.index)
+    
+    episode.download(path + str(episode.index) + '.mp4',
+                     method = backend, callback = debug, quiet = True)
+    
+    times += [time() - episode_start_time]
+    sleep(timeout)
+    times_wtm += [time() - episode_start_time]
+
+
+global_time = time() - global_start_time
+
+print('\033[92m\nDownloaded all episodes!\033[0m')
+
+print(f'Downloaded {len(episodes)} in {round(global_time, 2)}s.')
+print(f'Average download speed: {round(sum(times) / len(times)), 2}s.')
+print(f'Average speed with timeouts: {round(sum(times_wtm) / len(times_wtm), 2)}s.')
+
+print('Times:')
+
+for i, t in enumerate(times):
+    print(f'\t* {i}. {round(t, 2)}s')
+    
+print('Exiting.')
