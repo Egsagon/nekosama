@@ -9,6 +9,15 @@ from nekosama import consts
 from typing import Callable
 from string import ascii_letters, digits
 
+try:
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    SKLEARN_INSTALLED = True
+
+except ImportError:
+    print('Warning: SKLEARN is not installed.')
+    SKLEARN_INSTALLED = False
+
 
 def get_closest_value(iter: list[int], value: int):
     '''
@@ -214,7 +223,68 @@ def popen(args: list[str], callback: Callable[[str], None]) -> int:
                 current_line = ''
             
             current_line += out
-            
+    
     return proc.poll()
+
+def search_anime(animes: list,
+                 query: str,
+                 top_matches: int = 5) -> list:
+    '''
+    ChatGPT magic
+    '''
+    
+    if not SKLEARN_INSTALLED:
+        raise ImportError('You must install sklearn to use this function.')
+    
+    # Calculate cosine similarity between query and anime names
+    vectorizer = CountVectorizer()
+    sims = [(anime['title'], cosine_similarity(vectorizer.fit_transform([query]),
+            vectorizer.transform([anime['title']]))[0][0]) for anime in animes]
+
+    # Sort and return top n matches
+    sims = sorted(sims, key = lambda x: x[1], reverse = 1)[:top_matches]
+    return [sim[0] for sim in sims]
+
+def search_anime2(animes: list, **filters):
+    results = []
+    for anime in animes:
+        match = True
+        
+        for key, value in filters.items():
+            if key == "genres":
+                if not set(value).issubset(anime.get("genres", [])):
+                    match = False
+                    break
+            elif key == "score":
+                if anime.get("score") is None or float(anime["score"]) < value:
+                    match = False
+                    break
+            elif key == "title":
+                print(value)
+                if value not in anime.get("title", "") \
+                    and value not in anime.get("title_english", "") \
+                    and value not in anime.get("title_romanji", "") \
+                    and value not in anime.get("title_french", ""): \
+                    #and (anime.get("others") is None \
+                    #or value not in anime.get("others", "")):
+                    
+                    match = False
+                    break
+            elif key == "type":
+                if anime.get("type") != value:
+                    match = False
+                    break
+            elif key == "others":
+                if anime.get("others") is None or value not in anime.get("others", ""):
+                    match = False
+                    break
+            elif key in anime and anime[key] != value:
+                match = False
+                break
+        
+        if match:
+            results.append(anime)
+    
+    return results
 
 # EOF

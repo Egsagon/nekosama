@@ -460,7 +460,9 @@ class Anime:
         
         print(f'[ AN ] Downloading anime {self.title}')
         
-        for episode in self.episodes[start:end]:
+        # for episode in self.episodes[start:end]:
+        
+        for episode in self.episodes:
             
             path = episode.download(
                 path = directory + name_format,
@@ -506,8 +508,10 @@ class Client:
         # Error protection
         if not req.ok: raise ConnectionError(req.status_code, req.content)
         
-        self.cache[url] = req
-        return req
+        res = json.loads(req.text)
+        
+        self.cache[url] = res
+        return res
     
     def clear_cache(self) -> None:
         '''
@@ -563,9 +567,10 @@ class Client:
                 for d in lang]
         
         # Fetch the urls and assemble the file
+        
         file = []
         for url in urls:
-            file += json.loads(self.session.get(url).text)
+            file += self.get(url)
         
         # Filter for animes
         filtered = []
@@ -600,5 +605,29 @@ class Client:
 
         # Generate objects
         return [Anime(consts.root + data['url']) for data in filtered]
+
+    def search_by_title(self,
+                        query: str,
+                        lang: str | tuple = None,
+                        limit: int = 5) -> None:
+        '''
+        Search using SKLEARN.
+        '''
+        
+        # Lang is needed first to retrieve the files
+        if lang is None: lang = ('VOSTFR', 'VF')
+        if isinstance(lang, str): lang = (lang, )
+        
+        urls = [consts.root + f'/animes-search-{d.lower()}.json'
+                for d in lang]
+        
+        # Fetch the urls and assemble the file
+        file = []
+        for url in urls:
+            file += self.get(url)
+        
+        # return utils.search_anime(file, query, limit)
+        
+        return utils.search_anime2(file, title = query)
 
 # EOF
