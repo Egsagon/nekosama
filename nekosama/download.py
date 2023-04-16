@@ -183,7 +183,7 @@ def bk_thread(raw: str,
         for key in sorted(chunks.keys()):
             
             if not quiet:
-                print(f'\r[ BK ] Downloading: {key}/{chunks}', end = '')
+                print(f'\r[ BK ] Downloading: {key}/{len(chunks)}', end = '')
             
             if callback is not None:
                 callback('writing', key, len(chunks))
