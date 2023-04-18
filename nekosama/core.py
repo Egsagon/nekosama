@@ -600,7 +600,13 @@ class Client:
             if not fdate(anime['start_date_year']): continue
             
             # Check tags
-            if name in anime['others'].lower(): matches += [anime]
+            keys = ['title', 'title_english', 'title_romanji', 'title_french']
+            
+            for key in keys:
+                if name in (anime[key] or '').lower():
+                    matches += [anime]
+                    break
         
         return [Anime(consts.root + data['url'], self.session) for data in matches]
+
 # EOF
