@@ -1,3 +1,4 @@
+import os
 import nekosama
 from time import time, sleep
 import tkinter.filedialog as file
@@ -32,6 +33,10 @@ episodes = anime.episodes[start:end]
 path = input('> Set path (default=tkinter): ') or file.askdirectory()
 
 assert path
+
+if not os.path.exists(path):
+    print('Creating path', path)
+    os.mkdir(path)
 
 if not path[-1] in '/\\': path += '/'
 

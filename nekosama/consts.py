@@ -36,7 +36,7 @@ class re:
     
     glob_name  = r'https://.*/anime/(info|episode)/(\d*)-([a-z-\d]*)_(vostfr|vf)' # Get url data
     ani_props  = r'<meta property=\"og:(?P<name>.*)\" content=\"([.\s\S]*?)\" />' # Get meta props
-    
+   
 
 class provider:
     '''
