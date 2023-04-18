@@ -582,7 +582,7 @@ class Client:
             if iter_limit and index >= iter_limit: break
             
             # Result limit
-            if limit and limit >= len(matches): break
+            if limit and len(matches) >= limit: break
             
             # Type filter
             t = anime['type'].lower()
