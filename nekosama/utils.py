@@ -3,6 +3,7 @@ Utilities for the core module.
 '''
 
 import re
+import os
 import subprocess
 from nekosama import consts
 
@@ -142,8 +143,7 @@ def popen(args: list[str], callback: Callable[[str], None]) -> int:
         args,
         stdout = subprocess.PIPE,
         stderr = subprocess.STDOUT,
-        text = True,
-        shell = True
+        text = True
     )
     
     # TODO Refactor
