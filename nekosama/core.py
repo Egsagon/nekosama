@@ -529,14 +529,14 @@ class Client:
         return Anime(url, self.session)
 
     def search(self,
-               name: str | re.Pattern = None,
+               name: str | re.Pattern = '', # TODO pattern
                lang: str | tuple = None,
-               id: int | re.Pattern = None,
                type: list[str] = [],
                genres: list[str] = [],
                score: str = None,
                date: str = None,
                limit: int = None,
+               iter_limit: int = None,
                filter: Callable[[dict], bool] = None) -> list[Anime]:
         '''
         Search for animes that match a query.
@@ -544,8 +544,7 @@ class Client:
         Arguments
             name: the name of the anime or a part of it.
             lang: VOSTFR or VF or a tuple of both.
-            id: the anime id.
-            type: a list of anime tags ('m0v1e', etc.) # TODO
+            type: a list of anime tags ('m0v1e', etc.)
             genres: a list of genres (shounen, action, etc.).
             score: score filter (e.g. '>4').
             date: release date filter (e.g. '>2010' or '2000<{}<2010').
@@ -567,38 +566,41 @@ class Client:
         for url in urls:
             file += json.loads(self.session.get(url).text)
         
-        # Filter for animes
-        filtered = []
-        for anime in file:
-            # Limit
-            if limit is not None and len(filtered) > limit - 1:
-                break
+        # Build filters
+        fdate = utils.fbuild(date)
+        fscore = utils.fbuild(score)
+        
+        matches = []
+        for index, anime in enumerate(file):
             
-            # User callable overrides all if set
-            if filter is not None:
-                if filter(anime): filtered += [anime]
+            # Custom filter override
+            if filter and filter(anime):
+                matches += [anime]
                 continue
             
-            # Small filters prevent further filtering
-            if not utils.match_filter(anime['start_date_year'], date): continue
-            if not utils.match_filter(anime['score'], score): continue
+            # Iteration limit
+            if iter_limit and index >= iter_limit: break
             
-            # String filters
-            if any([utils.match_string(anime['id'], id),
-                    utils.match_string(anime['title'], name)]):
-                filtered += [anime]
-                continue
+            # Result limit
+            if limit and limit >= len(matches): break
             
-            # Groups filters
-            for genre in genres:
-                if genre in anime['genres'] and not anime in filtered:
-                    filtered += anime
+            # Type filter
+            t = anime['type'].lower()
+            if len(type) and t and t in type: continue
             
-            for type_ in type:
-                if type_ in anime['type'] and not anime in filtered:
-                    filtered += anime
-
-        # Generate objects
-        return [Anime(consts.root + data['url']) for data in filtered]
-
+            # Genres filter
+            if len(genres):
+                for genre in anime['genres']:
+                    if not genre in genres: continue
+            
+            # Score filter
+            if not fscore(anime['score']): continue
+            
+            # Date filter
+            if not fdate(anime['start_date_year']): continue
+            
+            # Check tags
+            if name in anime['others'].lower(): matches += [anime]
+        
+        return [Anime(consts.root + data['url'], self.session) for data in matches]
 # EOF

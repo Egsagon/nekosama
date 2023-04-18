@@ -5,5 +5,15 @@ https://github.com/Egsagon/neko-sama-api
 '''
 
 
-from nekosama.core import Episode, Anime, Client
-from nekosama.consts import provider, quality
+from nekosama.core import (
+    Episode,
+    Anime,
+    Client
+)
+
+from nekosama.consts import (
+    provider,
+    quality,
+    genre,
+    type
+)

@@ -2,6 +2,16 @@
 Constants for the core module.
 '''
 
+root = 'https://neko-sama.fr'
+
+headers = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
+    'Connection': 'keep-alive',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'
+}
+
 class re:
     '''
     Useful parsing regexes.
@@ -48,14 +58,42 @@ class quality:
     HALF = 'half'
     WORST = 'worst'
 
-headers = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
-    'Connection': 'keep-alive',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:2.0.1) Gecko/20100101 Firefox/4.0.1'
-}
+class genre:
+    thriller = 'thriller'
+    fantasy = 'fantasy'
+    hentai = 'hentai'
+    mystery = 'mystery'
+    ecchi = 'ecchi'
+    mahou_shoujo = 'mahou shoujo'
+    shoujo = 'shoujo'
+    adventure = 'adventure'
+    romance = 'romance'
+    shounen = 'shounen'
+    slice_of_life = 'slice of life'
+    horror = 'horror'
+    sports = 'sports'
+    isekai = 'isekai'
+    magic = 'magic'
+    mafia = 'mafia'
+    military = 'military'
+    yuri = 'yuri'
+    mecha = 'mecha'
+    psychological = 'psychological'
+    drama = 'drama'
+    cyberpunk = 'cyberpunk'
+    music = 'music'
+    action = 'action'
+    sci_fi = 'sci-fi'
+    battle_royale = 'battle royale'
+    supernatural = 'supernatural'
+    comedy = 'c0m1d'
 
-root = 'https://neko-sama.fr'
+class type:
+    tv = 'tv'
+    ova = 'ova'
+    movie = 'm0v1e'
+    special = 'special'
+    
+    unknown = ''
 
 # EOF

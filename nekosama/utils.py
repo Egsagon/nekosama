@@ -131,56 +131,6 @@ def parse_url(url: str) -> dict[str]:
     if res['type'] == 'info': res['type'] = 'anime'
     return res
 
-def match_filter(match_: str, filter: str | Callable[[str], bool]) -> bool:
-    '''
-    Checks whether a filter matches something.
-    
-    Arguments
-        match_: the string to match with.
-        filter: the filter to use.
-    
-    TODO - Add regex filter feature
-    '''
-    
-    if filter is None: return 1
-    
-    # If filter is a function, pass it the date
-    if callable(filter): return filter(match_)
-    
-    # Format filter
-    if '{}' in filter: matches = filter.format(match_)
-    else: matches = match_ + filter
-    
-    return eval(matches)
-
-def normalize(string: str) -> str:
-    '''
-    Normalize a string for searching.
-    
-    Arguments
-        string: the string to normalize.
-    '''
-    
-    return '' .join([c for c in string.strip()
-                     if c in ascii_letters + digits]).lower()
-
-def match_string(match_: str, value: str | re.Pattern) -> bool:
-    '''
-    Checks whether a string or a regex matches something.
-    
-    Arguments
-        match_: the string to match with.
-        value: a string or a regex to check.
-    '''
-    
-    if isinstance(value, re.Pattern):
-        return value.match(match_)
-    
-    a, b = map(normalize, (str(match_), str(value)))
-    
-    # return (a in b) or (b in a) # not strict enough
-    return (a == b) or (b in a)
-
 def popen(args: list[str], callback: Callable[[str], None]) -> int:
     '''
     Execute a shell command. Each time a line is outputed,
@@ -216,5 +166,37 @@ def popen(args: list[str], callback: Callable[[str], None]) -> int:
             current_line += out
             
     return proc.poll()
+
+def fbuild(filter: Callable | str | int | float) -> Callable[[str], bool]:
+    '''
+    Build a filter.
+    '''
+    
+    # Bypass if already a function
+    if callable(filter): return filter
+    
+    # Always pass if unspecified
+    if filter is None: return lambda v: True
+    
+    # Absolute numbers filter
+    if isinstance(filter, int | float):
+        return lambda v: float(v) == filter
+    
+    # Relative evaluations filter
+    if isinstance(filter, str):
+        
+        # Absolute position filter
+        if '{}' in filter:
+            return lambda v: eval(filter.format(v))
+        
+        # Left handed filter
+        if filter[0] in '<=>':
+            return lambda v: eval(v + filter)
+        
+        # Right handed filter
+        if filter[-1] in '<=>':
+            return lambda v: eval(filter + v)
+    
+    raise TypeError('Invalid filter:', filter)
 
 # EOF
