@@ -281,7 +281,7 @@ class Episode:
         TODO - lazy
         '''
         
-        keys = ['name', 'title', 'image', 'time', 'id', 'lang']
+        keys = ['name', 'title', 'image', 'time', 'id', 'lang', 'url']
         
         return {key: getattr(self, key) for key in keys}
 
@@ -507,6 +507,7 @@ class Anime:
         '''
         
         return {
+            'url': self.url,
             'name': self.name,
             'id': self.id,
             'title': self.title,
@@ -514,7 +515,7 @@ class Anime:
             'episodes': len(self.episodes),
             'image': self.image,
             'tags': self.tags,
-            'description': self.description
+            'description': self.description,
         }
             
 
