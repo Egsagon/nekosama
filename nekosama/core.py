@@ -275,6 +275,15 @@ class Episode:
             # TODO
             raise err
 
+    def to_dict(self, lazy: bool = False) -> dict:
+        '''
+        Return a serialized version of the object.
+        TODO - lazy
+        '''
+        
+        keys = ['name', 'title', 'image', 'time', 'id', 'lang']
+        
+        return {key: getattr(self, key) for key in keys}
 
 class Anime:
     def __init__(self,
@@ -491,6 +500,23 @@ class Anime:
         
         return pathes
 
+    def to_dict(self, lazy: bool = False) -> dict:
+        '''
+        Return a serialised version of the object.
+        TODO - lazy
+        '''
+        
+        return {
+            'name': self.name,
+            'id': self.id,
+            'title': self.title,
+            'lang': self.lang,
+            'episodes': len(self.episodes),
+            'image': self.image,
+            'tags': self.tags,
+            'description': self.description
+        }
+            
 
 class Client:
     def __init__(self) -> None:
