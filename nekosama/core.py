@@ -399,7 +399,7 @@ class Anime:
         '''
          
         if self.data is None: self.get_data()
-        return self.data['url_image']
+        return self.data['image']
     
     def download_image(self, path: str) -> None:
         '''
