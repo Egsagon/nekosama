@@ -161,6 +161,15 @@ class Episode:
         
         return int(re.findall(consts.re.ep_index, self.url)[0])
     
+    @property
+    def image(self) -> str:
+        '''
+        The image url.
+        '''
+         
+        if self.data is None: self.get_data()
+        return self.data['url_image']
+    
     def download_image(self, path: str) -> None:
         '''
         Download the episode image.
@@ -169,8 +178,7 @@ class Episode:
             path: the path to download to.
         '''
         
-        if self.data is None: self.get_data()
-        raw = self.get(self.data['url_image'])
+        raw = self.get(self.image).content
         
         with open(path, 'wb') as output:
             output.write(raw)
@@ -375,6 +383,15 @@ class Anime:
         
         return list(tags)
     
+    @property
+    def image(self) -> str:
+        '''
+        The image url.
+        '''
+         
+        if self.data is None: self.get_data()
+        return self.data['url_image']
+    
     def download_image(self, path: str) -> None:
         '''
         Download the anime image.
@@ -383,8 +400,7 @@ class Anime:
             path: the path to download to.
         '''
         
-        url = self.data['image']
-        raw = self.get(url).content
+        raw = self.get(self.image).content
         
         with open(path, 'wb') as output:
             output.write(raw)
