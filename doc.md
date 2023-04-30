@@ -1,0 +1,97 @@
+
+# Docs
+
+## Client
+The client object handles searching animes.
+It generates `Anime` objects. It is also
+responsible for keeping the same requests
+session between all animes and episodes instances.
+
+```python
+# Initialisation
+>>> client = ns.Client()
+
+# Get an anime from a url
+>>> client.get_anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datta-ken_vostfr')
+<Anime `tensei-shitara-slime-datta-ken`>
+
+# Search animes on the website
+>>> client.search('slime datta ken', lang = 'VOSTFR')
+[<Anime `tensei-shitara-slime-datta-ken`>, <Anime `tensei-shitara-slime-datta-ken-2nd-season-part-2`>, <Anime `tensei-shitara-slime-datta-ken-2nd-season`>, <Anime `tensura-nikki-tensei-shitara-slime-datta-ken`>, <Anime `tensei-shitara-slime-datta-ken-kanwa-verudora-nikki`>]
+```
+
+The `search` function can be filtered with multiple other arguments (name, genres, date, score, and more).
+
+## Anime
+The Anime object represents an anime on the platform.
+It handles fetching anime data and episodes. It can be initialized in two ways:
+from the `Client.get_anime` method or with a specifif url:
+
+```python
+>>> anime = ns.Anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datta-ken_vostfr')
+>>> anime.title
+Tensei Shitara Slime Datta Ken VOSTFR
+>>> anime.description
+Aucun synopsis pour le moment.
+```
+
+It has the following methods:
+```python
+# Download the anime poster
+anime.download_image('image.jpg')
+
+# Download the anime background picture
+anime.download_background('image.jpg')
+
+# Download all the episodes to dir
+anime.download('dir/')
+```
+
+The `anime.download` method has multiple other parameters,
+such has using a specific name formating, quality or provider. See its docstring for reference.
+
+The object also has multiple properties, like `title`, `tags`, `description`, or `episodes`.
+
+###### Note `Anime.name` is the raw name used for path naming, while `Anime.title` is the fancy name
+
+The episode objects returns a list of `Episode` objects.
+
+## Episode
+They represent one episode of an anime.
+
+Available properties:
+```python
+episode = anime.episodes[0]
+episode.time  # Episode duration in minutes
+episode.title # Fancy title of the episode
+episode.index # Index in the episodes list
+```
+
+Available methods:
+```python
+episode.download_image() # Download the episode poster
+episode.download('ep_1.mp4') # Download the episode
+```
+
+The `episode.download` method has multiple other parameters,
+such has using a specific path formating, quality or provider. See its docstring for reference.
+
+## Backends
+
+The `Anime` and `Episode` objects can use different methods/backends to download a video.
+
+| Backend name    | Download | Concat | Description               | Time |
+| --------------- | -------- | ------ | ------------------------- | ---- |
+| 'ffmpeg'        | FFMPEG   | FFMPEG | Fully rely on ffmpeg      | 95s  |
+| 'thread'        | Threads  | Dummy  | Fast fetching             | 48s  |
+| 'thread_ffmpeg' | Threads  | FFMPEG | Fast download with ffmpeg | 70s  |
+| 'safe'          | Dummy    | Dummy  | Dummy simple fallback     | 160s |
+
+###### Note 1: The usage of FFMPEG is not always nescessary.
+###### Note 2: While the `threads` backends are the fatest backends, they might produce some errors where ffmpeg won't.
+###### Note 3: The downloading time is there only for comparison, it almost entirely depends on the system internet connection.
+
+# TODO
+
+- UI example
+- Advanced verbose on ffmpeg backends (raw or parsed)
