@@ -31,15 +31,8 @@ An example can be found in the `main.py` file.
 
 # Setup
 
-- Install the pip package `requests` (should be built-in)
-
-- Clone the repository:
-```sh
-git clone https://github.com/Egsagon/neko-sama-api
-cd neko-sama-api/
-python3 main.py
-```
-
+- Use python `3.11` or higher
+- Install using pip: `pip install git+https://github.com/Egsagon/neko-sama-api.git`
 - Optionally, install FFMPEG to your system.
 
 # Docs
