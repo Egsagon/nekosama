@@ -32,7 +32,7 @@ An example can be found in the `main.py` file.
 # Setup
 
 - Use python `3.11` or higher
-- Install using pip: `pip install git+https://github.com/Egsagon/neko-sama-api.git`
+- Install using pip: `pip install nekosama`
 - Optionally, install FFMPEG to your system.
 
 # Docs
