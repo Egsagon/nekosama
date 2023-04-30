@@ -37,4 +37,5 @@ An example can be found in the `main.py` file.
 
 # Docs
 
-A simple documentation is available [here](https://github.com/Egsagon/neko-sama-api/blobl).
+A simple documentation is available [here](https://github.com/Egsagon/neko-sama-api/blob/master/doc.md).
+For more information, see docstrings and source code.
