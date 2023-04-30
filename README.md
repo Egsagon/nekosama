@@ -9,7 +9,7 @@ License: MIT - See the `LICENSE` file.
 
 # Usage
 
-Simple script to download all the episodes of an anime:
+Simple script to download all the episodes of an anime.
 ```python
 import nekosama as ns
 
@@ -18,7 +18,7 @@ anime = ns.Anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datt
 anime.download('slime/', quality = ns.quality.HALF)
 ```
 
-It can also be used to search for animes on the website:
+It can also be used to search for animes on the website.
 ```python
 import nekosama as ns
 
@@ -27,13 +27,11 @@ slimes = client.search('slime datta ken',
                        lang = 'VOSTFR')
 ```
 
-An example can be found in the `main.py` file,
-and a ui in the `ui.py` file.
+An example can be found in the `main.py` file.
 
 # Setup
 
 - Install the pip package `requests` (should be built-in)
-
 
 - Clone the repository:
 ```sh
