@@ -213,7 +213,13 @@ class Episode:
         
         # Get the m3u file url
         src = self.get(res, headers = consts.headers).text
-        res = re.findall(consts.re.m3u8, src)[0]
+        
+        # if provider == consts.provider.FUSE:
+        if 'atob' in src: reg = consts.re.new_fuse_json
+        else: reg = consts.re.m3u8
+        
+        # Parse the encoded json
+        res = re.findall(reg, src)[0]
         raw = base64.b64decode(res).decode()
         m3u = re.findall(consts.re.m3u8_urls, raw)[0].replace('\\', '')[:-1]
         

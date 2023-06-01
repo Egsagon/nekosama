@@ -8,7 +8,6 @@ import subprocess
 from nekosama import consts
 
 from typing import Callable
-from string import ascii_letters, digits
 
 
 def get_closest_value(iter: list[int], value: int):
