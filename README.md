@@ -1,3 +1,5 @@
+### ⚠️ I'm not maintaining this anymore. Pretty sure the main part still works, it just needs to adapt to the newest version of their player(s). If you want to contribute, have fun.
+
 # NEKO SAMA API
 
 An API that scraps the `neko-sama.fr` website.
