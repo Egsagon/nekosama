@@ -1,4 +1,4 @@
-### ⚠️ I'm not maintaining this anymore. Pretty sure the main part still works, it just needs to adapt to the newest version of their player(s). If you want to contribute, have fun.
+### ⚠️ I'm not maintaining this anymore. As of 10/10/2023, the API still seems to work, but you might expect errors or bugs in the future.
 
 # NEKO SAMA API
 
