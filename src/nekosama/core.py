@@ -48,11 +48,8 @@ class Episode:
         self.name = self.info['name']
         self.lang = self.info['lang'].upper()
     
-    def __str__(self) -> str:
-        return f'<Episode {self.title} (ep.{self.index})>'
-    
     def __repr__(self) -> str:
-        return self.__str__()
+        return f'nekosama.Episode(name={self.anime.name}, index={self.index})'
     
     def get(self,
             url: str,
@@ -236,7 +233,7 @@ class Episode:
                  path: str,
                  provider: str = consts.provider.BEST,
                  quality: str = consts.quality.BEST,
-                 method: str = 'ffmpeg',
+                 method: download.METHOD_TYPE = 'ffmpeg',
                  **kwargs) -> None:
         '''
         Download the episode at a specific path.
@@ -318,12 +315,8 @@ class Anime:
         
         self.cached_episodes = []
     
-    def __str__(self) -> str:
-        # return f'<Anime `{self.title}`>'
-        return f'<Anime `{self.name}`>'
-    
     def __repr__(self) -> str:
-        return self.__str__()
+        return f'nekosama.Anime(name={self.name})'
     
     def get(self,
             url: str,
@@ -469,10 +462,10 @@ class Anime:
                  name_format: str = '{name}.mp4',
                  provider: str = consts.provider.BEST,
                  quality: str = consts.quality.BEST,
-                 method: str = 'ffmpeg',
+                 method: download.METHOD_TYPE = 'ffmpeg',
                  timeout = 5,
-                 start: int = 0,
-                 end: int = 0,
+                 start: int | None = None,
+                 end: int | None = None,
                  **kwargs) -> list[str]:
         '''
         Download all the episodes to a directory

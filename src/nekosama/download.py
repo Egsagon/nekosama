@@ -12,7 +12,7 @@ import shutil
 import requests
 import threading
 
-from typing import Callable
+from typing import Callable, Literal
 from nekosama import consts
 from nekosama import utils
 
@@ -25,6 +25,9 @@ BACKENDS = [
     'thread_ffmpeg',
     'safe'
 ]
+
+
+METHOD_TYPE = Literal['ffmpeg', 'thread', 'thread_ffmpeg', 'safe']
 
 def reach(method: str) -> Callable:
     '''
