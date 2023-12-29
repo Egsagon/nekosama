@@ -1,26 +1,37 @@
-### ⚠️ I'm not maintaining this anymore. As of 10/10/2023, the API still seems to work, but you might expect errors or bugs in the future.
-
 # NEKO SAMA API
 
-An API that scraps the `neko-sama.fr` website.
-Is able to search, fetch and download animes.
+> [!WARNING]
+> Dropping support for this. It still works as of late 2023, but you might expect bugs in the future.
 
-Supports different video qualities and providers.
+An API wrapper for the `neko-sama.fr` anime website. It supports searching and downloading with different
+qualities and providers.
 
-License: MIT - See the `LICENSE` file.
+# Setup
+
+- Use python `3.11` or higher
+- Install using pip: `pip install nekosama`
+- Optionally, install FFMPEG to your system.
 
 # Usage
 
-Simple script to download all the episodes of an anime.
+Downloading a whole anime season:
 ```python
 import nekosama as ns
 
-anime = ns.Anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datta-ken_vostfr')
+client = ns.Client()
+anime = client.get_anime('https://neko-sama.fr/anime/info/9520-tensei-shitara-slime-datta-ken_vostfr')
 
 anime.download('slime/', quality = ns.quality.HALF)
 ```
 
-It can also be used to search for animes on the website.
+Downloadnig a single episode:
+```python
+episode6 = anime.episodes[5]
+
+episode6.download('ep6.mp4', quality = ns.quality.BEST)
+```
+
+Searching for animes:
 ```python
 import nekosama as ns
 
@@ -29,15 +40,11 @@ slimes = client.search('slime datta ken',
                        lang = 'VOSTFR')
 ```
 
-An example can be found in the `main.py` file.
-
-# Setup
-
-- Use python `3.11` or higher
-- Install using pip: `pip install nekosama`
-- Optionally, install FFMPEG to your system.
-
 # Docs
 
 A simple documentation is available [here](https://github.com/Egsagon/neko-sama-api/blob/master/doc.md).
 For more information, see docstrings and source code.
+
+# License
+
+This project uses the MIT license. See the `LICENSE` file.
