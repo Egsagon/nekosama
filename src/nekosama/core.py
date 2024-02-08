@@ -11,9 +11,11 @@ from nekosama import utils
 from nekosama import consts
 from nekosama import download
 
+import logging
 from time import sleep
 from typing import Callable
 
+logger = logging.getLogger(__name__)
 
 class Episode:
     def __init__(self,
@@ -202,7 +204,7 @@ class Episode:
         # Get provider url (link to the player)
         if not len(self.providers): self.get_providers()
         provider_url = utils.select_provider(self.providers, provider)
-        print('[FRAG] Fetched provider', provider)
+        logger.info('Fetched provider %s', provider)
         
         # Get the provider link to its script
         src = self.get(provider_url , headers = consts.headers).text
@@ -220,7 +222,7 @@ class Episode:
         raw = base64.b64decode(res).decode()
         m3u = re.findall(consts.re.m3u8_urls, raw)[0].replace('\\', '')[:-1]
         
-        print('[FRAG] Fetched m3u file')
+        logger.info('Fetched M3U8 file')
         
         # Get the m3u file data
         src = self.get(m3u, headers = consts.headers).text
@@ -267,10 +269,10 @@ class Episode:
         
         # Start the download
         backend = download.reach(method)
-        # print('Using backend', backend)
+        logger.info('Using download backend %s', backend)
         
         try:
-            print(f'[ EP ] Downloading episode {self.index}')
+            logger.info('Downloading episode %s', self.index)
             backend(raw = raw, path = path, **kwargs)
         
         except Exception as err:
@@ -481,8 +483,7 @@ class Anime:
         '''
         
         pathes = []
-        
-        print(f'[ AN ] Downloading anime {self.title}')
+        logger.info('Downloading anime %s', self.name)
         
         for episode in self.episodes[start:end]:
             

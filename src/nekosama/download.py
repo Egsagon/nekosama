@@ -11,10 +11,15 @@ import copy
 import shutil
 import requests
 import threading
+from ffmpeg_progress_yield import FfmpegProgress
+
+import logging
 
 from typing import Callable, Literal
 from nekosama import consts
 from nekosama import utils
+
+logger = logging.getLogger(__name__)
 
 # Get the FFMPEG path
 FFMPEG = shutil.which('ffmpeg')
@@ -38,7 +43,7 @@ def reach(method: str) -> Callable:
         raise Exception('Invalid backend', method)
     
     if FFMPEG is None and 'ffmpeg' in method:
-        print('[ BK ] FFMPEG is not installed, falling back to safe')
+        logger.warning('FFMPEG is not installed, falling back')
         method = 'safe'
     
     return eval('bk_' + method)
@@ -69,20 +74,9 @@ def bk_ffmpeg(raw: str,
         path, '-y'
     ]
     
-    def log(line: str) -> None:
-        # Decide whether to execute the callback or not
-        # for each line.
-        
-        key = re.findall(consts.re.frag_index, line)
-        
-        if len(key) and callback is not None:
-            callback('downloading', int(key[0]) + 1, lenght)
-
-        if not quiet:
-            print(line, end = '')
-    
-    # Start FFMPEG
-    assert utils.popen(command, log) == 0
+    for progress in FfmpegProgress(command).run_command_with_progress():
+        if callback:
+            callback(progress)
     
     # Delete the m3u8 file
     os.remove('temp.m3u')
