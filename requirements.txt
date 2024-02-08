@@ -1,1 +1,2 @@
 requests>=2
+ffmpeg_download_progress
