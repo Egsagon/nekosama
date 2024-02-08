@@ -1,2 +1,2 @@
 requests>=2
-ffmpeg_download_progress
+ffmpeg-progress-yield>=0.7.8
