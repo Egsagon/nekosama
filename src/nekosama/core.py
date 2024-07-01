@@ -436,12 +436,11 @@ class Anime:
         '''
         
         src = self.get(self.url).text
-        data = json.loads(re.findall(consts.re.ep_list, src)[0])
+        urls = re.findall(consts.re.valid_ep, src)[::-1] 
         
         eps = []
-        for ep in data:
-            eps += [Episode(url = consts.root + ep['url'],
-                            data = ep,
+        for url in urls:
+            eps += [Episode(url = url,
                             anime = self,
                             session = self.session)]
         
