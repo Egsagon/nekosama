@@ -641,13 +641,8 @@ class Client:
             # Date filter
             if not fdate(anime['start_date_year']): continue
             
-            # Check tags
-            keys = ['title', 'title_english', 'title_romanji', 'title_french']
-            
-            for key in keys:
-                if name in (anime[key] or '').lower():
-                    matches += [anime]
-                    break
+            if name.lower() in anime['title'].lower():
+                matches += [anime]
         
         return [Anime(consts.root + data['url'], self.session) for data in matches]
 
