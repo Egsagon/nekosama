@@ -293,7 +293,8 @@ class Episode:
 class Anime:
     def __init__(self,
                  url: str,
-                 session: requests.Session = None) -> None:
+                 session: requests.Session = None,
+                 data: dict = None) -> None:
         '''
         Represents an anime containing one or multiple episodes.
         
@@ -303,6 +304,7 @@ class Anime:
         
         self.url = url
         self.info = utils.parse_url(self.url)
+        self.query_data = data
         
         # Error protection
         if self.info['type'] != 'anime':
@@ -371,7 +373,15 @@ class Anime:
         The anime title.
         '''
         
-        return self.data['title'].replace(' | Neko-sama', '')
+        title: str = self.data['title']
+        
+        if '|' in title:
+            title = title.split('|')[0]
+
+        title = title.replace('VOSTFR', '')
+        title = title.replace('VF', '')
+
+        return title.strip()
     
     @property
     def description(self) -> str:
@@ -644,6 +654,6 @@ class Client:
             if name.lower() in anime['title'].lower():
                 matches += [anime]
         
-        return [Anime(consts.root + data['url'], self.session) for data in matches]
+        return [Anime(data['url'], self.session, data) for data in matches]
 
 # EOF
