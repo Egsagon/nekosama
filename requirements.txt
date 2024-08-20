@@ -1,0 +1,3 @@
+httpx
+yt_dlp
+rich[progress]

@@ -1,0 +1,18 @@
+[project]
+name = "nekosama"
+version = "1.0"
+description = "API Wrapper for neko-sama.fr"
+authors = [
+    {name = "Egsagon", email = "egsagon12@gmail.com"}
+]
+dependencies = [
+    "requests",
+    "ffmpeg-progress-yield"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["./"]
