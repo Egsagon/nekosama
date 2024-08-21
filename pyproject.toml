@@ -19,6 +19,9 @@ dependencies = [
 ]
 requires-python = ">=3.11"
 
+[project.urls]
+Repository = "https://github.com/Egsagon/nekosama"
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
