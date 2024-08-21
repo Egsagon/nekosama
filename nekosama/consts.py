@@ -1,5 +1,5 @@
 from re import compile
-
+from typing import Literal
 
 headers = {
     'Accept': '*/*',
@@ -9,7 +9,9 @@ headers = {
 }
 
 class re:
-    '''Collection of internal regexes.'''
+    '''
+    Collection of internal regexes.
+    '''
     
     anime_data = compile(r'<meta property=\"og:(?P<name>.*)\" content=\"([.\s\S]*?)\" />')
     url_data   = compile(r'https://.*?/(\d*)-([a-z-\d]*)_(vostfr|vf)')
@@ -19,5 +21,14 @@ class re:
     atob       = compile(r'atob\(\"(.*?)\"\)')
     url        = compile(r'(https.*?)\"')
     qualities  = compile(r'=\"(\d+?)\"\n(http.*?)(?:\n|$)')
-    
+
+Type = Literal['tv', 'ova', 'm0v1e', 'special']
+
+Genre = Literal[
+    'Psychological', 'Action', 'Hentai', 'Drama', 'Mahou Shoujo', 'Music', 'Mecha', 'Yuri',
+    'Adventure', 'Shoujo', 'Shounen', 'Romance', 'Ecchi', 'Sports', 'Mafia', 'Battle Royale',
+    'Mystery', 'Thriller', 'Magic', 'Horror', 'Comedy', 'Military', 'Isekai', 'Slice of Life',
+    'Supernatural', 'Sci-Fi', 'Fantasy', 'Cyberpunk'
+]
+
 # EOF
