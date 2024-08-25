@@ -13,6 +13,17 @@ if TYPE_CHECKING:
     from .anime import Anime
 
 
+class NoProgress:
+    '''
+    Fake tracker that doesn't track progress.
+    '''
+    
+    def add_task(*args, **kwargs): pass
+    def update(*args, **kwargs): pass
+    
+    def __eq__(self, value: object) -> bool:
+        return value == Progress
+
 class Episode:
     '''
     Represents an anime episode.
@@ -98,7 +109,7 @@ class Episode:
                  path: str,
                  quality: Literal[1080, 720, 480] = 1080,
                  callback: Callable[[int, int], None] = None,
-                 tracker: Progress | Type[Progress] = Progress,
+                 tracker: Progress | Type[Progress] | None = Progress,
                  **dl_kw) -> None:
         '''
         Downloads the episode.
@@ -109,6 +120,9 @@ class Episode:
         :param tracker: rich progress display for simultaneous downloads.
         :param **dl_kw: Additional YTDLP arguments.
         '''
+        
+        if tracker is None:
+            tracker = NoProgress
         
         with (tracker() if tracker == Progress else nullcontext(tracker)) as progress:
             
