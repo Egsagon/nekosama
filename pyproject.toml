@@ -1,6 +1,6 @@
 [project]
 name = "nekosama"
-version = "4.0"
+version = "4.1"
 description = "API Wrapper for neko-sama.fr"
 authors = [
     {name = "Egsagon", email = "egsagon12@gmail.com"}
