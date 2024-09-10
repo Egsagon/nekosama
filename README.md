@@ -1,3 +1,6 @@
+> [!CAUTION]
+> This project is discontinuated due to NekoSama going offline. I doubt the website team would ever see this repository, but the website was very nice while it lasted.
+
 # Nekosama
 
 This is a python package for using with the [NekoSama](https://neko-sama.fr/) anime website.
